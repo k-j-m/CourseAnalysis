@@ -1,0 +1,311 @@
+
+<!doctype html>
+<html lang="en">
+		
+		<head>	
+			<link rel="stylesheet" type="text/css" href="includes/stylesheets/main.css"/><link rel="stylesheet" type="text/css" href="includes/stylesheets/bootstrap.css"/><link rel="stylesheet" type="text/css" href="includes/stylesheets/bootstrap-responsive.css"/>
+			<meta charset="utf-8"/>
+			<link rel="alternate" type="application/rss+xml" title="FRA &raquo; Feed" href="http://fellrunner.org.uk/feeds" /> 
+			<meta name="viewport" content="width=device-width, initial-scale=1.0">
+			<title>Fellrunner &raquo; Races</title>
+			<!--[if lt IE 9]>
+			<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+			<![endif]-->
+			<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+			<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+			<script type="text/javascript" src="includes/js/prototype.js"></script>
+			<script type="text/javascript" src="includes/js/bootstrap-dropdown.js"></script>
+			<script type="text/javascript" src="includes/js/validation.js"></script>
+			<script type="text/javascript"src="http://maps.googleapis.com/maps/api/js?key=AIzaSyD-3X9hh61LsCvzQyzrrRxjr41POEjWIlM&sensor=true">
+    			</script>
+			<script type="text/javascript" src="includes/effects.js"></script>
+			<script type="text/javascript" src="includes/js.js"></script>
+			<script type="text/javascript" src="includes/modernizr.js"></script>
+			<script type="text/javascript" src="includes/js/scroll.js"></script>
+			<script type="text/javascript" src="includes/js/bootstrap-collapse.js"></script>
+
+		</head>
+		
+		<body lang="en" data-spy="scroll" data-target=".subnav" data-offset="50">
+		
+			
+	
+			<div id="header">
+				<div id="logo"><img src="img/fralogo.png"></div>
+			</div>
+            <div id="menu">
+                
+<div class="navbar">
+  <div class="navbar-inner">
+    <div class="container">
+			<a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</a>
+				<div class="nav-collapse" id="navwrap">
+					<ul class="nav">
+            <li class=""><a href="join-the-fra.php" id="m_library" title="Membership" >Membership</a></li>
+						<li class=""><a href="/index.php" id="m_home" class="f selected" title="Go to the homepage">Home</a></li>
+						<li class="divider-vertical"></li>
+						<li class=""><a href="http://forum.fellrunner.org.uk" id="m_forums" title="Forums" >Forums</a></li>
+						<li class="divider-vertical"></li>
+		                  <li class="dropdown">
+		                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Events<b class="caret"></b></a>
+		                    <ul class="dropdown-menu" style="text-shadow:none;">
+								<li class=""><a href="races.php" id="m_races" title="Races" >Races</a></li>
+								<li class=""><a href="results.php" id="m_results" title="Results" >Results</a></li>
+								<li class=""><a href="championships.php" id="m_champs" title="Championships" >Championships</a></li>
+                                                                <li class=""><a href="international-fell.php" id="m_inter" title="International fell" >England Mountain Running</a></li>
+                                                                <li class=""><a href="international-mountain.php" id="m_inter" title="International mountain" >GB Mountain Running</a></li>
+								<li class=""><a href="juniors.php" id="m_juniors" title="Juniors" >Juniors</a></li>
+								<li class=""><a href="coaching.php" id="coaching" title="Juniors" >Coaching</a></li>		                    
+								<li class=""><a href="navigation.php" id="navigation" title="Navigation" >Navigation</a></li>		                    
+<li class=""><a href="wildernessfirstaid.php" id="first-aid" title="First aid" >First aid</a></li>
+					</ul>
+		                  </li>
+						<li class="divider-vertical"></li>
+		                  <li class="dropdown">
+		                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">FRA<b class="caret"></b></a>
+		                    <ul class="dropdown-menu" style="text-shadow:none;">
+								<li class=""><a href="committee.php" id="m_comm" title="Committee" >Committee</a></li>
+								<li class=""><a href="documents.php" id="m_comm" title="Documents" >Documents</a></li>
+								<li class=""><a href="agm.php" id="m_comm" title="AGM" >AGM</a></li>
+								<li class=""><a href="organisers.php" id="m_comm" title="organisers" >Organisers</a></li>
+								<li class=""><a href="library.php" id="m_library" title="Library" >Library</a></li>
+								<li class=""><a href="fellrunner.php" id="m_fellrunner" title="Fellrunner" >The Fell Runner</a></li>
+								<li class=""><a href="englandathletics.php" id="m_library" title="England athletics" >England Athletics</a></li>
+		                    </ul>
+		                  </li>
+						<li class="divider-vertical"></li>
+						<li class=""><a href="links.php" id="m_links" title="Links" >Links</a></li>
+
+					</ul>
+				</div>
+			</div><!--inner-->		
+	</div><!--navfix-->
+</div><!--navbar-->
+            </div>
+
+
+<div class="container-fluid">
+	<div class="row-fluid"> 
+		<div class="span4">
+			<div id="front_page_left">
+								
+				<div id="left-col" class="races-browse">
+				
+				"Events in this Calendar which have been Registered with the FRA are identified by "(R)" after the name of the race in the race details. Most of the listed races in England are Permitted in this way and will take place in accordance with "FRA Safety Requirements and Rules for Competition".  Races not identified with "(R)", are included for information only; they are not Registered with the FRA and the FRA cannot vouch for their Permit status." 
+				
+				
+					<div class="title_latest_results mpsectionhead"><b>Search races</b></div>
+					<br />
+						<form action="races-search.php" method="GET" id="results-search-form">
+							<input type="text" name="q" class="input" />
+							<input type="submit" value="Go" class="button" style="color:#ffffff;" />						
+						</form>
+					<br />
+				<div class="title_latest_results mpsectionhead"><b>Competitors Safety Rules and Equipment</b></div>
+					<br />
+					<ul class="fp_r_list">
+							<li>to download FRA documents, please click <a href="/documents.php" title="FRA documents" class="btn"><img src="img/download.png"> here</a></li><br />
+							
+							
+							<br />
+							<br /><br />
+						</ul>
+					
+					<div class="title_latest_results mpsectionhead"><b>Abbreviations</b></div>
+					<br />
+					<ul class="fp_r_list">
+						<li><b>ER</b> - Experience required</li>
+						<li><b>NS</b> - Navigational Skills Required</li>
+						<li><b>LK</b> - Local Knowledge an advantage</li>
+						<li><b>PM</b> - Course Partially Marked</li> 				
+					</ul>
+					<br />
+
+					<div class="title_latest_results mpsectionhead"><b>Browse by year</b></div>
+					<br />
+					<ul class="fp_r_list">
+															<li class="year">
+									<img src="img/arrow.png"><b><a href="races.php?y=2010">2010</a></b>								</li>
+															<li class="year">
+									<img src="img/arrow.png"><b><a href="races.php?y=2011">2011</a></b>								</li>
+															<li class="year">
+									<img src="img/arrow.png"><b><a href="races.php?y=2012">2012</a></b>								</li>
+															<li class="year">
+									<img src="img/arrow.png"><b><a href="races.php?y=2013">2013</a></b>								</li>
+															<li class="year">
+									<img src="img/arrow.png"><b><a href="races.php?y=2014">2014</a></b>								</li>
+															<li class="year">
+									<img src="img/arrow.png"><b><a href="races.php?y=2015">2015</a></b>								</li>
+															<li class="year">
+									<img src="img/arrow.png"><b><a href="races.php?y=2016">2016</a></b>								</li>
+															<li class="year">
+									<img src="img/arrow.png"><b><a href="races.php?y=2017">2017</a></b>								</li>
+													</ul>	
+					<br />				
+						
+					<div class="title_latest_results mpsectionhead"><b>Browse by type</b></div>
+					<br />
+						<ul class="fp_r_list">
+							<li><img src="img/arrow.png"><b><a href="races.php?all">All</a></b> <span>(4806)</span></li>
+							<li><img src="img/arrow.png"><b><a href="races.php?junior">Junior races</a></b> <span>(1400)</span></li>
+							<li><img src="img/arrow.png"><b><a href="races.php?updates">Race updates</a></b> <span>(780)</span></li>
+						</ul>
+					<br />
+				
+					<div class="title_latest_results mpsectionhead"><b>Browse by place</b></div>
+					<br />
+						<ul class="fp_r_list">
+							<li><img src="img/arrow.png"><b><a href="races.php?all">All</a></b> <span>(4806)</span></li>
+							<li style="margin-top:1em;"><img src="img/arrow.png"><b> <a href="races.php?country=E">England</a></b> <span>(3969)</span></li><li style="margin-left: 3em;"><img src="img/arrow.png"><a href="races.php?region=1">Northumberland / Durham</a></li><li style="margin-left: 3em;"><img src="img/arrow.png"><a href="races.php?region=2">Lake District</a></li><li style="margin-left: 3em;"><img src="img/arrow.png"><a href="races.php?region=3">North Pennines</a></li><li style="margin-left: 3em;"><img src="img/arrow.png"><a href="races.php?region=4">North York Moors</a></li><li style="margin-left: 3em;"><img src="img/arrow.png"><a href="races.php?region=5">York. Dales</a></li><li style="margin-left: 3em;"><img src="img/arrow.png"><a href="races.php?region=6">Bowland/NW Lancs.</a></li><li style="margin-left: 3em;"><img src="img/arrow.png"><a href="races.php?region=7">South/West Pennines</a></li><li style="margin-left: 3em;"><img src="img/arrow.png"><a href="races.php?region=8">Peak District</a></li><li style="margin-left: 3em;"><img src="img/arrow.png"><a href="races.php?region=9">Shropshire/Welsh Borders</a></li><li style="margin-left: 3em;"><img src="img/arrow.png"><a href="races.php?region=10">Midlands</a></li><li style="margin-left: 3em;"><img src="img/arrow.png"><a href="races.php?region=11">South West</a></li><li style="margin-left: 3em;"><img src="img/arrow.png"><a href="races.php?region=12">South East</a></li><li style="margin-left: 3em;"><img src="img/arrow.png"><a href="races.php?region=13">Isle of Man</a></li><li style="margin-top:1em;"><img src="img/arrow.png"><b> <a href="races.php?country=W">Wales</a></b> <span>(478)</span></li><li style="margin-left: 3em;"><img src="img/arrow.png"><a href="races.php?region=20">North</a></li><li style="margin-left: 3em;"><img src="img/arrow.png"><a href="races.php?region=21">Mid</a></li><li style="margin-left: 3em;"><img src="img/arrow.png"><a href="races.php?region=22">South</a></li><li style="margin-top:1em;"><img src="img/arrow.png"><b> <a href="races.php?country=S">Scotland</a></b> <span>(165)</span></li><li style="margin-left: 3em;"><img src="img/arrow.png"><a href="races.php?region=15">North</a></li><li style="margin-left: 3em;"><img src="img/arrow.png"><a href="races.php?region=16">Islands</a></li><li style="margin-left: 3em;"><img src="img/arrow.png"><a href="races.php?region=17">Central</a></li><li style="margin-left: 3em;"><img src="img/arrow.png"><a href="races.php?region=18">South</a></li><li style="margin-top:1em;"><img src="img/arrow.png"><b> <a href="races.php?country=NI">Northern Ireland</a></b> <span>(40)</span></li><li style="margin-top:1em;"><img src="img/arrow.png"><b> <a href="races.php?country=NE">England - Not FRA</a></b> <span>(154)</span></li><li style="margin-left: 3em;"><img src="img/arrow.png"><a href="races.php?region=1">Northumberland / Durham</a></li><li style="margin-left: 3em;"><img src="img/arrow.png"><a href="races.php?region=2">Lake District</a></li><li style="margin-left: 3em;"><img src="img/arrow.png"><a href="races.php?region=3">North Pennines</a></li><li style="margin-left: 3em;"><img src="img/arrow.png"><a href="races.php?region=4">North York Moors</a></li><li style="margin-left: 3em;"><img src="img/arrow.png"><a href="races.php?region=5">York. Dales</a></li><li style="margin-left: 3em;"><img src="img/arrow.png"><a href="races.php?region=6">Bowland/NW Lancs.</a></li><li style="margin-left: 3em;"><img src="img/arrow.png"><a href="races.php?region=7">South/West Pennines</a></li><li style="margin-left: 3em;"><img src="img/arrow.png"><a href="races.php?region=8">Peak District</a></li><li style="margin-left: 3em;"><img src="img/arrow.png"><a href="races.php?region=9">Shropshire/Welsh Borders</a></li><li style="margin-left: 3em;"><img src="img/arrow.png"><a href="races.php?region=10">Midlands</a></li><li style="margin-left: 3em;"><img src="img/arrow.png"><a href="races.php?region=11">South West</a></li><li style="margin-left: 3em;"><img src="img/arrow.png"><a href="races.php?region=12">South East</a></li><li style="margin-left: 3em;"><img src="img/arrow.png"><a href="races.php?region=13">Isle of Man</a></li>						</ul> 
+					<br />
+
+					<div class="title_latest_results mpsectionhead"><b>Browse by distance</b></div>
+					<br />
+						<ul class="fp_r_list">
+							<li class="distance"><img src="img/arrow.png"><b> <a href="races.php?all">All</a></b> <span>(4806)</span></li>
+							<li><img src="img/arrow.png"><b> <a href="races.php?dist=as">AS</a></b> <span>(1133)</span></li><li><img src="img/arrow.png"><b> <a href="races.php?dist=am">AM</a></b> <span>(416)</span></li><li><img src="img/arrow.png"><b> <a href="races.php?dist=al">AL</a></b> <span>(292)</span></li><li><img src="img/arrow.png"><b> <a href="races.php?dist=bs">BS</a></b> <span>(1170)</span></li><li><img src="img/arrow.png"><b> <a href="races.php?dist=bm">BM</a></b> <span>(766)</span></li><li><img src="img/arrow.png"><b> <a href="races.php?dist=bl">BL</a></b> <span>(252)</span></li><li><img src="img/arrow.png"><b> <a href="races.php?dist=cs">CS</a></b> <span>(161)</span></li><li><img src="img/arrow.png"><b> <a href="races.php?dist=cm">CM</a></b> <span>(95)</span></li><li><img src="img/arrow.png"><b> <a href="races.php?dist=cl">CL</a></b> <span>(95)</span></li><li><img src="img/arrow.png"><b> <a href="races.php?dist=mm">MM</a></b> <span>(103)</span></li><li><img src="img/arrow.png"><b> <a href="races.php?dist=o">O</a></b> <span>(52)</span></li><li><img src="img/arrow.png"><b> <a href="races.php?dist=relay">Relay</a></b> <span>(92)</span></li><li><img src="img/arrow.png"><b> <a href="races.php?dist=unknown">Unknown</a></b> <span>(179)</span></li>						</ul>
+						<br />
+					</div>
+				</div>
+			</div>
+			<div class="span8">
+
+										
+														
+								<h2 class="title_races">Sat 8th Apr 2017 &ndash; Wardle Skyline (R)</h2>
+								<br />
+																								<div id="main-content-left">
+								
+																	
+
+
+										<h2 class="title_committee"><img src="img/international.png">Race details</h2>
+										<br />
+										<ul class="race_info_list">
+											<li><strong>Date &amp; time:</strong>
+											Sat 8th Apr 2017 at 14:00											
+											</li>
+																						<li><strong>Country:</strong> England</li>
+											<li><strong>Region:</strong> South/West Pennines</li>											<li><strong>Category:</strong> BM</li>
+											<li><strong>Website:</strong><b> <a href="http://www.rochdaleharriers.co.uk" title="www.rochdaleharriers.co.uk">www.rochdaleharriers.co.uk</a></b></li>											
+											<li><strong>Distance:</strong> 
+												11.3km / 7m											</li>
+											
+											<li><strong>Climb:</strong> 
+												381m / 1250ft											</li>
+											<li><strong>Venue:</strong> Wardle Square, off A58 Rochdale/Littleborough Rd.</li>
+											<li><strong>Grid ref:</strong> 912171</li>											<li><strong>Skills &amp; experience:</strong> PM</li>
+											<li><strong>Minimum age:</strong> 18</li>																					</ul>
+
+										<br />
+									
+
+										<h2 class="title_committee"><img src="img/programme.png">Entry information</h2>
+										<br />
+											<ul class="race_info_list">
+												<li><strong>Entry on day?</strong> <img src="images/tick.png" alt="Entry on day allowed" title="Entry on day allowed" /></li>
+																									<li><strong>Entry on day fee:</strong> 
+														&pound;5.00													</li>
+												
+												<li><strong>Pre-entry</strong> <img src="images/cross.png" alt="Pre-entry not allowed" title="Pre-entry not allowed" /></li>
+												
+																							</ul>
+
+											<br />
+
+										<h2 class="title_committee"><img src="img/contactcard.png">Contact for Race Information</h2>
+										<br />
+										<ul class="race_info_list">
+											<li>Eric Taylor</li>
+											<li>Rough Hill Farm, Loveclough, Rossendale, BB4 8UG</li>				
+											<li>07888 868684</li>
+											<li><img src="http://fellrunner.org.uk/email_generate/email_img.php?e=info@carbonimageltd.co.uk" /></li>
+										</ul>
+										<br />
+
+								
+								
+								
+
+										<h2 class="title_committee"><img src="img/users.png">Teams</h2>
+										<br />
+										<ul class="race_info_list">
+											<li><strong>Teams allowed:</strong> <img src="images/tick.png" alt="Teams allowed" title="Teams allowed" /></li>
+																					</ul>
+										<br />
+
+									
+
+										<h2 class="title_committee"><img src="img/graph.png">Records</h2>
+										<br />
+											<ul class="race_info_list"><li><strong>Male:</strong> J. Taylor &ndash; 00:40:47 &ndash; 1990</li><li><strong>Female:</strong> R. Smith &ndash; 00:47:17 &ndash; 2002</li></ul>										<br />
+		
+
+										<h2 class="title_committee"><img src="img/junior.png">Juniors</h2>
+										<br />
+										<ul class="race_info_list">
+											<li><strong>Junior races:</strong> <img src="images/cross.png" alt="Juniors not allowed" title="Juniors not allowed" /></li>
+																					</ul>
+										<br />
+				
+
+
+										<h2 class="title_committee"><img src="img/selectioncriteria.png">Permit / Insurance</h2>
+										<br />
+																					<p><img src="images/tick.png" /> This race has a Permit and associated UK Athletics insurance from the FRA</p>
+																				<br />
+
+					
+
+																		<h2 class="title_committee">Other information</h2>
+										<br />
+										<p>Parking at Watergrove reservoir, 0.5km beyond registration. Proceeds to Scouts and Rossendale MRT. Please refer to race website nearer the date, as route may be subject to change due to construction of windfarm.</p>																<br />				
+
+										<h2 class="title_committee"><img src="img/otherrace.png">Other races on this day</h2>
+										<br />
+										<ul class="race_info_list"><li>11:00am &ndash; <a href="races.php?id=4858" title="Coledale Horseshoe">Coledale Horseshoe</a></li><li>12:00pm &ndash; <a href="races.php?id=5278" title="Donard Challenge">Donard Challenge</a></li></ul>										<br />
+
+
+
+						Sorry no maps available for this event								
+								
+														
+						</div>
+</div>
+</div>
+
+			<div class="row-fluid">
+				<div class="span12">
+					<div id="footer">
+	<div id="ads">
+		<h2 class="title_committee">Sponsors</h2>
+			<ul>
+				<li><a href="#"><img src="images/adverts/petebland3.gif"></li>
+			</ul>
+	</div>
+	</div id="sitemap">
+	</div>
+</div>
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-136116-8', 'fellrunner.org.uk');
+  ga('send', 'pageview');
+
+</script>
+				</div><!--span12-->
+			</div><!--row-->
+
+
+</body>
+</html>
+

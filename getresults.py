@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 import re
 import os
 
+
 class FellRunner(object):
 
     URL = 'http://fellrunner.org.uk/'
@@ -16,13 +17,7 @@ class FellRunner(object):
         races_url = self.URL + 'races.php'
         response = requests.get(races_url)
         page = response.text
-        soup = BeautifulSoup(page, 'lxml')
-        pattern = "races.php\\?id=[0-9]*$"
-        for link in soup.find_all('a'):
-            href = link.get('href')
-            if href and re.match(pattern, href):
-                _, idx = href.split('=')
-                yield idx
+        return get_available_race_years(page)
 
     def get_race_year_pages(self, y_idx):
         """
@@ -54,12 +49,23 @@ class FellRunner(object):
         response = requests.get(races_url, params={'y': y_idx, 'p': p_idx})
         page = response.text
         soup = BeautifulSoup(page, 'lxml')
-        pattern = "races.php?id=[0-9]*$"
+        pattern = "races.php\\?id=[0-9]*$"
         for link in soup.find_all('a'):
             href = link.get('href')
             if href and re.match(pattern, href):
                 _, race_id = href.split('=')
                 yield race_id
+
+    def get_race_info(self, r_idx):
+        """ (str,) -> RaceInfo
+
+        Returns the race information for the given race index
+        """
+        races_url = self.URL + 'races.php'
+        response = requests.get(races_url, {'id': r_idx})
+        assert response.status_code == 200
+        page = response.text
+        return get_race_info(page)
 
     def available_result_years(self):
         """
@@ -120,6 +126,16 @@ def year_page_idxs(page):
             yield idx
 
 
+def get_available_race_years(page):
+    soup = BeautifulSoup(page, 'lxml')
+    pattern = "races.php\\?y=[0-9]*$"
+    for link in soup.find_all('a'):
+        href = link.get('href')
+        if href and re.match(pattern, href):
+            _, idx = href.split('=')
+            yield idx
+
+
 MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
           'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 M_DICT = dict([(m, i + 1) for i, m in enumerate(MONTHS)])
@@ -143,33 +159,66 @@ def datestr_to_date(s):
     return day, month, year
 
 
+def _is_valid_category(s):
+    """ (str,) -> bool
+    >>> _is_valid_category('AL')
+    True
+    >>> _is_valid_category('Unknown')
+    False
+    """
+    if len(s) != 2:
+        return False
+
+    if s[0] not in ['A', 'B', 'C']:
+        return False
+
+    if s[1] not in ['S', 'M', 'L']:
+        return False
+
+    return True
+
+
 def get_race_info(page):
     soup = BeautifulSoup(page, 'lxml')
-
-    # Race name
-    race_header = soup.find('h2', {'class': 'title_races'}).text
-    name = race_header.split(u'\u2013')[-1].split('(')[0].strip()
 
     # Pull info out of the race info table
     raceinfo_ul = soup.find('ul', {'class': 'race_info_list'})
     litems = raceinfo_ul.findAll('li')
 
+    category = litems[3].text.split()[1].strip()
+    if not _is_valid_category(category):
+        raise BadRaceInfo
+
+    # Race name
+    race_header = soup.find('h2', {'class': 'title_races'}).text
+    name = race_header.split(u'\u2013')[-1].split('(')[0].strip()
+
     # Date eg: <strong>Date &amp; time:</strong>  Sat 1st Apr 2017 at 11:00
     date_str = litems[0].text.split('time:')[-1].strip()
     date_ints = datestr_to_date(date_str)
 
+    # If the race has a website it pushes distance and climb down a row
+    has_website = litems[4].text.startswith('Website')
+    i = 1 if has_website else 0
     # Distance (km)
-    dist_str = litems[4].text.split()[1].strip()
-    assert dist_str.endswith('km')
+    dist_str = litems[4 + i].text.split()[1].strip()
+    if dist_str == 'Unknown':
+        raise BadRaceInfo
+
+    assert dist_str.endswith('km'), dist_str
     distance_km = float(dist_str[:-2])
 
     # Climb (m)
-    climb_str = litems[5].text.split()[1].strip()
+    climb_str = litems[5 + i].text.split()[1].strip()
     assert climb_str.endswith('m')
     climb_m = float(climb_str[:-1])
 
     return RaceInfo(date=date_ints, name=name,
                     distance_km=distance_km, climb_m=climb_m)
+
+
+class BadRaceInfo(ValueError):
+    pass
 
 
 class RaceInfo(object):
@@ -186,6 +235,14 @@ class RaceInfo(object):
         self.date = date
         self.distance_km = distance_km
         self.climb_m = climb_m
+
+    def to_json(self):
+        return {
+            'name': self.name,
+            'date': self.date,
+            'distance_km': self.distance_km,
+            'climb_m': self.climb_m,
+        }
 
 
 class ResultsFolder(object):
@@ -285,5 +342,59 @@ def scrape_race_results():
             print '.',
 
 
+class RaceInfoTable(object):
+
+    def __init__(self, f):
+        if not os.path.exists(f):
+            with open(f, 'w') as f_out:
+                f_out.write('index\tname\tdate\tdistance_km\tclimb_m\n')
+        self._f = f
+
+        self._indices = set()
+        with open(f) as f_in:
+            next(f_in) # throw away header
+            for line in f_in:
+                idx = line.split()[0]
+                self._indices.add(idx)
+
+    def __contains__(self, idx):
+        return idx in self._indices
+
+    def add(self, idx, race_info):
+        with open(self._f, 'a') as f_a:
+            f_a.write('%s\t%s\t%s\t%s\t%s\n' % (idx, race_info.name, race_info.date,
+                                                race_info.distance_km, race_info.climb_m))
+
+
+def build_race_info_index():
+    rinfo_table = RaceInfoTable('rinfo.dat')
+
+    fellrunner = FellRunner()
+
+    y_idxs = fellrunner.available_race_years()
+    for y_idx in y_idxs:
+        print 'Year %s\t' % y_idx,
+        p_idxs = fellrunner.get_race_year_pages(y_idx)
+        for p_idx in p_idxs:
+            print p_idx,
+            r_idxs = fellrunner.get_race_ids(y_idx, p_idx)
+            for r_idx in r_idxs:
+                print '.',
+                if r_idx in rinfo_table:
+                    continue
+                try:
+                    rinfo = fellrunner.get_race_info(r_idx)
+                except BadRaceInfo:
+                    pass
+                except Exception:
+                    with open('error.log', 'a') as f_out:
+                        f_out.write('Error for race id: %s\n' % r_idx)
+                else:
+                    rinfo_table.add(r_idx, rinfo)
+        print ''
+
+
 if __name__ == '__main__':
-    pass
+    build_race_info_index()
+    #fr = FellRunner()
+    #print list(fr.get_race_ids('2017','3'))

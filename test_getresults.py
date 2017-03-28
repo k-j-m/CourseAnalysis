@@ -1,9 +1,21 @@
 import unittest
 from os.path import join, dirname, abspath
 
-from getresults import get_race_info
+from getresults import get_race_info, BadRaceInfo, get_available_race_years
 
 TEST_PAGES = abspath(join(dirname(__file__), 'test_pages'))
+
+
+class TestRaceInfoYears(unittest.TestCase):
+
+    def setUp(self):
+        self.page = open(join(TEST_PAGES, 'chickenrun2017.html')).read()
+
+    def test_get_years(self):
+        expected_years = set(['2010','2011','2012','2013',
+                              '2014','2015','2016','2017'])
+        returned_years = set(get_available_race_years(self.page))
+        self.assertEquals(expected_years, returned_years)
 
 
 class TestRaceInfoPage(unittest.TestCase):
@@ -57,7 +69,20 @@ class TestCornercases(unittest.TestCase):
     as expected.
     """
 
-    #page = open(join(TEST_))
+    def test_nav_course(self):
+        """
+        The FRA nav course isn't a race and so should complain when
+        we try to get its info.
+        """
+        page = open(join(TEST_PAGES, 'nav_course.html'))
+        self.assertRaises(BadRaceInfo, get_race_info, page)
+
+    def test_bad_page(self):
+        """
+        Something wrong with 2017 wardle skyline... don't know what
+        """
+        page = open(join(TEST_PAGES, 'race_5214.html'))
+        rinfo = get_race_info(page)
 
 
 if __name__ == '__main__':
