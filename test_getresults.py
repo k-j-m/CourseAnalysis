@@ -2,7 +2,7 @@ import unittest
 from os.path import join, dirname, abspath
 
 from getresults import (get_race_info, BadRaceInfo, get_available_race_years,
-                        result_table_entries_from_page)
+                        result_table_entries_from_page, race_ids_from_race_table_page)
 
 TEST_PAGES = abspath(join(dirname(__file__), 'test_pages'))
 
@@ -64,7 +64,7 @@ class TestRaceInfoPage(unittest.TestCase):
         self.assertEquals(expected_climb, returned_climb)
 
 
-class TestCornercases(unittest.TestCase):
+class TestCornerCases(unittest.TestCase):
     """
     Throw in some corner cases to make sure the thing behaves
     as expected.
@@ -84,6 +84,19 @@ class TestCornercases(unittest.TestCase):
         """
         page = open(join(TEST_PAGES, 'race_5214.html'))
         rinfo = get_race_info(page)
+
+    def test_slieve_donard(self):
+        """
+        For whatever reason Slieve Donard isn't picked up from the 2016 races...
+        """
+        # first make sure that we find it in the race table
+        page = open(join(TEST_PAGES, '2016_races_p2.html'))
+        race_ids = set(race_ids_from_race_table_page(page))
+        self.assertTrue('4212' in  race_ids)
+
+        # then make sure we can get the race info
+        page = open(join(TEST_PAGES, '2016_slieve_donard.html'))
+        race_info = get_race_info(page)
 
 
 class TestRaceResultTable(unittest.TestCase):

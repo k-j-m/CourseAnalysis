@@ -19,6 +19,15 @@ class FellRunner(object):
         page = response.text
         return get_available_race_years(page)
 
+    def result_table_entries(self, y_idx):
+        """ (str) -> Iter[Tuple[str, str, str]]
+        result_id, name, date
+        """
+        results_url = self.URL + 'results.php'
+        response = requests.get(results_url, {'year': y_idx})
+        page = response.text
+        return result_table_entries_from_page(page)
+
     def get_race_year_pages(self, y_idx):
         """
         """
@@ -48,13 +57,7 @@ class FellRunner(object):
         races_url = self.URL + 'races.php'
         response = requests.get(races_url, params={'y': y_idx, 'p': p_idx})
         page = response.text
-        soup = BeautifulSoup(page, 'lxml')
-        pattern = "races.php\\?id=[0-9]*$"
-        for link in soup.find_all('a'):
-            href = link.get('href')
-            if href and re.match(pattern, href):
-                _, race_id = href.split('=')
-                yield race_id
+        return race_ids_from_race_table_page(page)
 
     def get_race_info(self, r_idx):
         """ (str,) -> RaceInfo
@@ -141,6 +144,16 @@ MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
 M_DICT = dict([(m, i + 1) for i, m in enumerate(MONTHS)])
 
 
+def race_ids_from_race_table_page(page):
+    soup = BeautifulSoup(page, 'lxml')
+    pattern = "races.php\\?id=[0-9]*$"
+    for link in soup.find_all('a'):
+        href = link.get('href')
+        if href and re.match(pattern, href):
+            _, race_id = href.split('=')
+            yield race_id
+
+
 def datestr_to_date(s):
     """ (str,) -> datetime
 
@@ -185,7 +198,15 @@ def get_race_info(page):
     raceinfo_ul = soup.find('ul', {'class': 'race_info_list'})
     litems = raceinfo_ul.findAll('li')
 
-    category = litems[3].text.split()[1].strip()
+    indexed_litems = {}
+    for litem in litems:
+        words = litem.text.split(':')
+        if len(words) <= 1:
+            continue
+        keyword = str(words[0])
+        indexed_litems[keyword] = litem.text
+
+    category = indexed_litems['Category'].split()[1].strip()
     if not _is_valid_category(category):
         raise BadRaceInfo
 
@@ -194,14 +215,11 @@ def get_race_info(page):
     name = race_header.split(u'\u2013')[-1].split('(')[0].strip()
 
     # Date eg: <strong>Date &amp; time:</strong>  Sat 1st Apr 2017 at 11:00
-    date_str = litems[0].text.split('time:')[-1].strip()
+    date_str = indexed_litems['Date & time'].split('time:')[-1].strip()
     date_ints = datestr_to_date(date_str)
 
-    # If the race has a website it pushes distance and climb down a row
-    has_website = litems[4].text.startswith('Website')
-    i = 1 if has_website else 0
     # Distance (km)
-    dist_str = litems[4 + i].text.split()[1].strip()
+    dist_str = indexed_litems['Distance'].split()[1].strip()
     if dist_str == 'Unknown':
         raise BadRaceInfo
 
@@ -209,7 +227,7 @@ def get_race_info(page):
     distance_km = float(dist_str[:-2])
 
     # Climb (m)
-    climb_str = litems[5 + i].text.split()[1].strip()
+    climb_str = indexed_litems['Climb'].split()[1].strip()
     assert climb_str.endswith('m')
     climb_m = float(climb_str[:-1])
 
@@ -224,10 +242,15 @@ def result_table_entries_from_page(page):
     """
     pattern = 'results.php\\?id=[0-9]*$'
     soup = BeautifulSoup(page, 'lxml')
-    rows = soup.find('table', {'id': 'posts-table'}).find("tbody").find_all("tr")
+    table = soup.find('table', {'id': 'posts-table'})
+    if table is None:
+        return
+
+    rows = table.find("tbody").find_all("tr")
     for row in rows:
         tds = row.find_all('td')
         date_str = tds[0].text
+        date_str.replace('-', '/')
         date = map(int, date_str.split('/'))
 
         name = tds[1].text
@@ -387,9 +410,16 @@ class RaceInfoTable(object):
 
     def add(self, idx, race_info):
         with open(self._f, 'a') as f_a:
-            date_str = '-'.join(map(str, race.date))
-            f_a.write('%s\t%s\t%s\t%s\t%s\n' % (idx, race_info.name, date_str,
+            date_str = '-'.join(map(str, race_info.date))
+            f_a.write('%s\t%s\t%s\t%s\t%s\n' % (idx, race_info.name.encode('utf8'), date_str,
                                                 race_info.distance_km, race_info.climb_m))
+
+    def __iter__(self):
+        with open(self._f, 'r') as f_in:
+            next(f_in)
+            for line in f_in:
+                idx, name, datestr, dist_km, climb_m = line.strip().split('\t')
+                yield idx, name, datestr, dist_km, climb_m
 
 
 class ResultTable(object):
@@ -403,11 +433,11 @@ class ResultTable(object):
         with open(f) as f_in:
             next(f_in)
             for line in f_in:
-                name, date_str, result_id = line.split()
+                result_id, name, date_str = line.strip().split('\t')
                 date = tuple(map(int, date_str.split('-')))
 
-                entry = name, date, result_id
-                self._result_ids = entry
+                entry = result_id, name, date_str
+                self._result_ids[result_id] = entry
 
     def __contains__(self, result_index):
         return result_index in self._result_ids
@@ -416,12 +446,15 @@ class ResultTable(object):
         if result_index in self:
             return None
 
-        with open(_f, 'w') as f_out:
+        with open(self._f, 'a') as f_out:
             date_str = '-'.join(map(str, date))
-            f_out.write('%s\t%s\t%s\n' % (result_index, name, date_str))
+            f_out.write('%s\t%s\t%s\n' % (result_index, name.encode('utf8'), date_str))
+
+    def __iter__(self):
+        return iter(self._result_ids.values())
 
 
-def build_race_info_index():
+def build_race_info_table():
     """
     Builds a local database of race information.
 
@@ -454,19 +487,46 @@ def build_race_info_index():
         print ''
 
 
-def build_results_index():
+def build_results_table():
     """
     Builds a local table of race name, date and results ID
     for a race.
     """
-    result_table = ResultsTable('resulttable.dat')
+    result_table = ResultTable('resulttable.dat')
     fellrunner = FellRunner()
 
     # TODO: iterate through fellrunner yearly result pages and
     #     build our local index of race results in a csv file
+    y_idxs = fellrunner.available_result_years()
+    for y_idx in ['2009']:#y_idxs:
+        print 'Getting results for year:', y_idx
+        for result_idx, name, date in fellrunner.result_table_entries(y_idx):
+            result_table.add(result_idx, name, date)
+
+
+def build_result_to_race_index():
+    result_table = ResultTable('resulttable.dat')
+    race_table = RaceInfoTable('rinfo.dat')
+
+    races = {}
+    for idx, name, datestr, dist_km, climb_m in race_table:
+        races[(name, datestr)] = idx
+
+    with open('orphan_results.log', 'w') as log:
+        with open('result_to_race_index.dat', 'w') as idx_file:
+            idx_file.write('result_id\trace_id\n')
+
+            for result_id, name, datestr in result_table:
+                if (name, datestr) in races:
+                    race_id = races[(name, datestr)]
+                    idx_file.write('%s\t%s\n' % (result_id, race_id))
+                else:
+                    log.write('%s\t%s\t%s\n' % (result_id, name, datestr))
 
 
 if __name__ == '__main__':
-    build_race_info_index()
+    build_result_to_race_index()
+    #build_results_table()
+    #build_race_info_table()
     #fr = FellRunner()
     #print list(fr.get_race_ids('2017','3'))

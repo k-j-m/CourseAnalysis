@@ -1,0 +1,640 @@
+
+<!doctype html>
+<html lang="en">
+		
+		<head>	
+			<link rel="stylesheet" type="text/css" href="includes/stylesheets/main.css"/><link rel="stylesheet" type="text/css" href="includes/stylesheets/bootstrap.css"/><link rel="stylesheet" type="text/css" href="includes/stylesheets/bootstrap-responsive.css"/>
+			<meta charset="utf-8"/>
+			<link rel="alternate" type="application/rss+xml" title="FRA &raquo; Feed" href="http://fellrunner.org.uk/feeds" /> 
+			<meta name="viewport" content="width=device-width, initial-scale=1.0">
+			<title>Fellrunner &raquo; Races</title>
+			<!--[if lt IE 9]>
+			<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+			<![endif]-->
+			<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+			<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+			<script type="text/javascript" src="includes/js/prototype.js"></script>
+			<script type="text/javascript" src="includes/js/bootstrap-dropdown.js"></script>
+			<script type="text/javascript" src="includes/js/validation.js"></script>
+			<script type="text/javascript"src="http://maps.googleapis.com/maps/api/js?key=AIzaSyD-3X9hh61LsCvzQyzrrRxjr41POEjWIlM&sensor=true">
+    			</script>
+			<script type="text/javascript" src="includes/effects.js"></script>
+			<script type="text/javascript" src="includes/js.js"></script>
+			<script type="text/javascript" src="includes/modernizr.js"></script>
+			<script type="text/javascript" src="includes/js/scroll.js"></script>
+			<script type="text/javascript" src="includes/js/bootstrap-collapse.js"></script>
+
+		</head>
+		
+		<body lang="en" data-spy="scroll" data-target=".subnav" data-offset="50">
+		
+			
+	
+			<div id="header">
+				<div id="logo"><img src="img/fralogo.png"></div>
+			</div>
+            <div id="menu">
+                
+<div class="navbar">
+  <div class="navbar-inner">
+    <div class="container">
+			<a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</a>
+				<div class="nav-collapse" id="navwrap">
+					<ul class="nav">
+            <li class=""><a href="join-the-fra.php" id="m_library" title="Membership" >Membership</a></li>
+						<li class=""><a href="/index.php" id="m_home" class="f selected" title="Go to the homepage">Home</a></li>
+						<li class="divider-vertical"></li>
+						<li class=""><a href="http://forum.fellrunner.org.uk" id="m_forums" title="Forums" >Forums</a></li>
+						<li class="divider-vertical"></li>
+		                  <li class="dropdown">
+		                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Events<b class="caret"></b></a>
+		                    <ul class="dropdown-menu" style="text-shadow:none;">
+								<li class=""><a href="races.php" id="m_races" title="Races" >Races</a></li>
+								<li class=""><a href="results.php" id="m_results" title="Results" >Results</a></li>
+								<li class=""><a href="championships.php" id="m_champs" title="Championships" >Championships</a></li>
+                                                                <li class=""><a href="international-fell.php" id="m_inter" title="International fell" >England Mountain Running</a></li>
+                                                                <li class=""><a href="international-mountain.php" id="m_inter" title="International mountain" >GB Mountain Running</a></li>
+								<li class=""><a href="juniors.php" id="m_juniors" title="Juniors" >Juniors</a></li>
+								<li class=""><a href="coaching.php" id="coaching" title="Juniors" >Coaching</a></li>		                    
+								<li class=""><a href="navigation.php" id="navigation" title="Navigation" >Navigation</a></li>		                    
+<li class=""><a href="wildernessfirstaid.php" id="first-aid" title="First aid" >First aid</a></li>
+					</ul>
+		                  </li>
+						<li class="divider-vertical"></li>
+		                  <li class="dropdown">
+		                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">FRA<b class="caret"></b></a>
+		                    <ul class="dropdown-menu" style="text-shadow:none;">
+								<li class=""><a href="committee.php" id="m_comm" title="Committee" >Committee</a></li>
+								<li class=""><a href="documents.php" id="m_comm" title="Documents" >Documents</a></li>
+								<li class=""><a href="agm.php" id="m_comm" title="AGM" >AGM</a></li>
+								<li class=""><a href="organisers.php" id="m_comm" title="organisers" >Organisers</a></li>
+								<li class=""><a href="library.php" id="m_library" title="Library" >Library</a></li>
+								<li class=""><a href="fellrunner.php" id="m_fellrunner" title="Fellrunner" >The Fell Runner</a></li>
+								<li class=""><a href="englandathletics.php" id="m_library" title="England athletics" >England Athletics</a></li>
+		                    </ul>
+		                  </li>
+						<li class="divider-vertical"></li>
+						<li class=""><a href="links.php" id="m_links" title="Links" >Links</a></li>
+
+					</ul>
+				</div>
+			</div><!--inner-->		
+	</div><!--navfix-->
+</div><!--navbar-->
+            </div>
+
+
+<div class="container-fluid">
+	<div class="row-fluid"> 
+		<div class="span4">
+			<div id="front_page_left">
+								
+				<div id="left-col" class="races-browse">
+				
+				"Events in this Calendar which have been Registered with the FRA are identified by "(R)" after the name of the race in the race details. Most of the listed races in England are Permitted in this way and will take place in accordance with "FRA Safety Requirements and Rules for Competition".  Races not identified with "(R)", are included for information only; they are not Registered with the FRA and the FRA cannot vouch for their Permit status." 
+				
+				
+					<div class="title_latest_results mpsectionhead"><b>Search races</b></div>
+					<br />
+						<form action="races-search.php" method="GET" id="results-search-form">
+							<input type="text" name="q" class="input" />
+							<input type="submit" value="Go" class="button" style="color:#ffffff;" />						
+						</form>
+					<br />
+				<div class="title_latest_results mpsectionhead"><b>Competitors Safety Rules and Equipment</b></div>
+					<br />
+					<ul class="fp_r_list">
+							<li>to download FRA documents, please click <a href="/documents.php" title="FRA documents" class="btn"><img src="img/download.png"> here</a></li><br />
+							
+							
+							<br />
+							<br /><br />
+						</ul>
+					
+					<div class="title_latest_results mpsectionhead"><b>Abbreviations</b></div>
+					<br />
+					<ul class="fp_r_list">
+						<li><b>ER</b> - Experience required</li>
+						<li><b>NS</b> - Navigational Skills Required</li>
+						<li><b>LK</b> - Local Knowledge an advantage</li>
+						<li><b>PM</b> - Course Partially Marked</li> 				
+					</ul>
+					<br />
+
+					<div class="title_latest_results mpsectionhead"><b>Browse by year</b></div>
+					<br />
+					<ul class="fp_r_list">
+															<li class="year">
+									<img src="img/arrow.png"><b><a href="races.php?y=2010">2010</a></b>								</li>
+															<li class="year">
+									<img src="img/arrow.png"><b><a href="races.php?y=2011">2011</a></b>								</li>
+															<li class="year">
+									<img src="img/arrow.png"><b><a href="races.php?y=2012">2012</a></b>								</li>
+															<li class="year">
+									<img src="img/arrow.png"><b><a href="races.php?y=2013">2013</a></b>								</li>
+															<li class="year">
+									<img src="img/arrow.png"><b><a href="races.php?y=2014">2014</a></b>								</li>
+															<li class="year">
+									<img src="img/arrow.png"><b><a href="races.php?y=2015">2015</a></b>								</li>
+															<li class="year">
+									<img src="img/arrow.png"><b><a href="races.php?y=2016"><strong>2016</strong></a></b>								</li>
+															<li class="year">
+									<img src="img/arrow.png"><b><a href="races.php?y=2017">2017</a></b>								</li>
+													</ul>	
+					<br />				
+						
+					<div class="title_latest_results mpsectionhead"><b>Browse by type</b></div>
+					<br />
+						<ul class="fp_r_list">
+							<li><img src="img/arrow.png"><b><a href="races.php?all">All</a></b> <span>(4806)</span></li>
+							<li><img src="img/arrow.png"><b><a href="races.php?junior">Junior races</a></b> <span>(1400)</span></li>
+							<li><img src="img/arrow.png"><b><a href="races.php?updates">Race updates</a></b> <span>(780)</span></li>
+						</ul>
+					<br />
+				
+					<div class="title_latest_results mpsectionhead"><b>Browse by place</b></div>
+					<br />
+						<ul class="fp_r_list">
+							<li><img src="img/arrow.png"><b><a href="races.php?all">All</a></b> <span>(4806)</span></li>
+							<li style="margin-top:1em;"><img src="img/arrow.png"><b> <a href="races.php?country=E">England</a></b> <span>(3969)</span></li><li style="margin-left: 3em;"><img src="img/arrow.png"><a href="races.php?region=1">Northumberland / Durham</a></li><li style="margin-left: 3em;"><img src="img/arrow.png"><a href="races.php?region=2">Lake District</a></li><li style="margin-left: 3em;"><img src="img/arrow.png"><a href="races.php?region=3">North Pennines</a></li><li style="margin-left: 3em;"><img src="img/arrow.png"><a href="races.php?region=4">North York Moors</a></li><li style="margin-left: 3em;"><img src="img/arrow.png"><a href="races.php?region=5">York. Dales</a></li><li style="margin-left: 3em;"><img src="img/arrow.png"><a href="races.php?region=6">Bowland/NW Lancs.</a></li><li style="margin-left: 3em;"><img src="img/arrow.png"><a href="races.php?region=7">South/West Pennines</a></li><li style="margin-left: 3em;"><img src="img/arrow.png"><a href="races.php?region=8">Peak District</a></li><li style="margin-left: 3em;"><img src="img/arrow.png"><a href="races.php?region=9">Shropshire/Welsh Borders</a></li><li style="margin-left: 3em;"><img src="img/arrow.png"><a href="races.php?region=10">Midlands</a></li><li style="margin-left: 3em;"><img src="img/arrow.png"><a href="races.php?region=11">South West</a></li><li style="margin-left: 3em;"><img src="img/arrow.png"><a href="races.php?region=12">South East</a></li><li style="margin-left: 3em;"><img src="img/arrow.png"><a href="races.php?region=13">Isle of Man</a></li><li style="margin-top:1em;"><img src="img/arrow.png"><b> <a href="races.php?country=W">Wales</a></b> <span>(478)</span></li><li style="margin-left: 3em;"><img src="img/arrow.png"><a href="races.php?region=20">North</a></li><li style="margin-left: 3em;"><img src="img/arrow.png"><a href="races.php?region=21">Mid</a></li><li style="margin-left: 3em;"><img src="img/arrow.png"><a href="races.php?region=22">South</a></li><li style="margin-top:1em;"><img src="img/arrow.png"><b> <a href="races.php?country=S">Scotland</a></b> <span>(165)</span></li><li style="margin-left: 3em;"><img src="img/arrow.png"><a href="races.php?region=15">North</a></li><li style="margin-left: 3em;"><img src="img/arrow.png"><a href="races.php?region=16">Islands</a></li><li style="margin-left: 3em;"><img src="img/arrow.png"><a href="races.php?region=17">Central</a></li><li style="margin-left: 3em;"><img src="img/arrow.png"><a href="races.php?region=18">South</a></li><li style="margin-top:1em;"><img src="img/arrow.png"><b> <a href="races.php?country=NI">Northern Ireland</a></b> <span>(40)</span></li><li style="margin-top:1em;"><img src="img/arrow.png"><b> <a href="races.php?country=NE">England - Not FRA</a></b> <span>(154)</span></li><li style="margin-left: 3em;"><img src="img/arrow.png"><a href="races.php?region=1">Northumberland / Durham</a></li><li style="margin-left: 3em;"><img src="img/arrow.png"><a href="races.php?region=2">Lake District</a></li><li style="margin-left: 3em;"><img src="img/arrow.png"><a href="races.php?region=3">North Pennines</a></li><li style="margin-left: 3em;"><img src="img/arrow.png"><a href="races.php?region=4">North York Moors</a></li><li style="margin-left: 3em;"><img src="img/arrow.png"><a href="races.php?region=5">York. Dales</a></li><li style="margin-left: 3em;"><img src="img/arrow.png"><a href="races.php?region=6">Bowland/NW Lancs.</a></li><li style="margin-left: 3em;"><img src="img/arrow.png"><a href="races.php?region=7">South/West Pennines</a></li><li style="margin-left: 3em;"><img src="img/arrow.png"><a href="races.php?region=8">Peak District</a></li><li style="margin-left: 3em;"><img src="img/arrow.png"><a href="races.php?region=9">Shropshire/Welsh Borders</a></li><li style="margin-left: 3em;"><img src="img/arrow.png"><a href="races.php?region=10">Midlands</a></li><li style="margin-left: 3em;"><img src="img/arrow.png"><a href="races.php?region=11">South West</a></li><li style="margin-left: 3em;"><img src="img/arrow.png"><a href="races.php?region=12">South East</a></li><li style="margin-left: 3em;"><img src="img/arrow.png"><a href="races.php?region=13">Isle of Man</a></li>						</ul> 
+					<br />
+
+					<div class="title_latest_results mpsectionhead"><b>Browse by distance</b></div>
+					<br />
+						<ul class="fp_r_list">
+							<li class="distance"><img src="img/arrow.png"><b> <a href="races.php?all">All</a></b> <span>(4806)</span></li>
+							<li><img src="img/arrow.png"><b> <a href="races.php?dist=as">AS</a></b> <span>(1133)</span></li><li><img src="img/arrow.png"><b> <a href="races.php?dist=am">AM</a></b> <span>(416)</span></li><li><img src="img/arrow.png"><b> <a href="races.php?dist=al">AL</a></b> <span>(292)</span></li><li><img src="img/arrow.png"><b> <a href="races.php?dist=bs">BS</a></b> <span>(1170)</span></li><li><img src="img/arrow.png"><b> <a href="races.php?dist=bm">BM</a></b> <span>(766)</span></li><li><img src="img/arrow.png"><b> <a href="races.php?dist=bl">BL</a></b> <span>(252)</span></li><li><img src="img/arrow.png"><b> <a href="races.php?dist=cs">CS</a></b> <span>(161)</span></li><li><img src="img/arrow.png"><b> <a href="races.php?dist=cm">CM</a></b> <span>(95)</span></li><li><img src="img/arrow.png"><b> <a href="races.php?dist=cl">CL</a></b> <span>(95)</span></li><li><img src="img/arrow.png"><b> <a href="races.php?dist=mm">MM</a></b> <span>(103)</span></li><li><img src="img/arrow.png"><b> <a href="races.php?dist=o">O</a></b> <span>(52)</span></li><li><img src="img/arrow.png"><b> <a href="races.php?dist=relay">Relay</a></b> <span>(92)</span></li><li><img src="img/arrow.png"><b> <a href="races.php?dist=unknown">Unknown</a></b> <span>(179)</span></li>						</ul>
+						<br />
+					</div>
+				</div>
+			</div>
+			<div class="span8">
+
+					<h2 class="title_races">All races in 2016</h2>	<ul id="races-month-list">
+		<li class="v" style="float:left;">View races in: </li>
+		<li><a href="races.php?m=january&y=2016" title="View the races in January 2016">January</a></li><li><a href="races.php?m=february&y=2016" title="View the races in February 2016">February</a></li><li><a href="races.php?m=march&y=2016" title="View the races in March 2016">March</a></li><li><a href="races.php?m=april&y=2016" title="View the races in April 2016">April</a></li><li><a href="races.php?m=may&y=2016" title="View the races in May 2016">May</a></li><li><a href="races.php?m=june&y=2016" title="View the races in June 2016">June</a></li><li><a href="races.php?m=july&y=2016" title="View the races in July 2016">July</a></li><li><a href="races.php?m=august&y=2016" title="View the races in August 2016">August</a></li><li><a href="races.php?m=september&y=2016" title="View the races in September 2016">September</a></li><li><a href="races.php?m=october&y=2016" title="View the races in October 2016">October</a></li><li><a href="races.php?m=november&y=2016" title="View the races in November 2016">November</a></li><li><a href="races.php?m=december&y=2016" title="View the races in December 2016">December</a></li><li><a href="races.php?y=2016" title="View all races in 2016" class="active">All</a></li>	</ul>
+								<br /><br />
+								<p style="clear: both">Showing results 151 &ndash; 200 of 616.</p>
+							
+											
+								<table id="posts-table">  
+	
+									<thead>  
+										<tr>  
+											<th scope="col" class="small">Date</th>
+											<th scope="col">Race</th>
+											<th scope="col">Category</th>
+											<th scope="col">Country</th>
+											<th scope="col">Region</th>
+										</tr>  
+									</thead>
+								
+									<tbody>
+						
+																			
+											<tr>
+												<td class="races-table-date">Sat 07/05/16</td>
+												<td><a href="races.php?id=4195">Preseli Ultrabeast</a></td>
+												<td>BL</td>
+												<td>Wales</td>
+												<td>South</td>
+											</tr>												
+																			
+											<tr>
+												<td class="races-table-date">Sat 07/05/16</td>
+												<td><a href="races.php?id=4305">Steam Bunny Stomp</a></td>
+												<td>BM</td>
+												<td>Wales</td>
+												<td>South</td>
+											</tr>												
+																			
+											<tr>
+												<td class="races-table-date">Sat 07/05/16</td>
+												<td><a href="races.php?id=4619">Up The Nab</a></td>
+												<td>AS</td>
+												<td>England</td>
+												<td>Peak District</td>
+											</tr>												
+																			
+											<tr>
+												<td class="races-table-date">Tue 10/05/16</td>
+												<td><a href="races.php?id=4572">Jack Bloor Race</a></td>
+												<td>BS</td>
+												<td>England</td>
+												<td>York. Dales</td>
+											</tr>												
+																			
+											<tr>
+												<td class="races-table-date">Tue 10/05/16</td>
+												<td><a href="races.php?id=4521">Mearley Clough</a></td>
+												<td>AS</td>
+												<td>England</td>
+												<td>South/West Pennines</td>
+											</tr>												
+																			
+											<tr>
+												<td class="races-table-date">Wed 11/05/16</td>
+												<td><a href="races.php?id=4234">Caradoc Classic</a></td>
+												<td>BS</td>
+												<td>England</td>
+												<td>Shropshire/Welsh Borders</td>
+											</tr>												
+																			
+											<tr>
+												<td class="races-table-date">Wed 11/05/16</td>
+												<td><a href="races.php?id=4592">Carraghan</a></td>
+												<td>AS</td>
+												<td>England</td>
+												<td>Isle of Man</td>
+											</tr>												
+																			
+											<tr>
+												<td class="races-table-date">Wed 11/05/16</td>
+												<td><a href="races.php?id=4557">Cautley Horseshoe</a></td>
+												<td>AS</td>
+												<td>England</td>
+												<td>York. Dales</td>
+											</tr>												
+																			
+											<tr>
+												<td class="races-table-date">Sat 14/05/16</td>
+												<td><a href="races.php?id=4150">Bollington Festival 3 Peaks</a></td>
+												<td>BS</td>
+												<td>England</td>
+												<td>Peak District</td>
+											</tr>												
+																			
+											<tr>
+												<td class="races-table-date">Sat 14/05/16</td>
+												<td><a href="races.php?id=4273">Cressbrook Crawl</a></td>
+												<td>BM</td>
+												<td>England</td>
+												<td>Peak District</td>
+											</tr>												
+																			
+											<tr>
+												<td class="races-table-date">Sat 14/05/16</td>
+												<td><a href="races.php?id=4493">Fairfield Horseshoe</a></td>
+												<td>AM</td>
+												<td>England</td>
+												<td>Lake District</td>
+											</tr>												
+																			
+											<tr>
+												<td class="races-table-date">Sat 14/05/16</td>
+												<td><a href="races.php?id=4423">Last Drop Loop</a></td>
+												<td>BS</td>
+												<td>England</td>
+												<td>South/West Pennines</td>
+											</tr>												
+																			
+											<tr>
+												<td class="races-table-date">Sat 14/05/16</td>
+												<td><a href="races.php?id=4415">Malham Kirkby Fell</a></td>
+												<td>BS</td>
+												<td>England</td>
+												<td>York. Dales</td>
+											</tr>												
+																			
+											<tr>
+												<td class="races-table-date">Sat 14/05/16</td>
+												<td><a href="races.php?id=4416">Malham Kirkby Fell Juniors</a></td>
+												<td>Unknown</td>
+												<td>England</td>
+												<td>York. Dales</td>
+											</tr>												
+																			
+											<tr>
+												<td class="races-table-date">Sun 15/05/16</td>
+												<td><a href="races.php?id=4135">Calderdale Way Relay</a></td>
+												<td>Relay</td>
+												<td>England</td>
+												<td>South/West Pennines</td>
+											</tr>												
+																			
+											<tr>
+												<td class="races-table-date">Mon 16/05/16</td>
+												<td><a href="races.php?id=4188">Trunce 3</a></td>
+												<td>BS</td>
+												<td>England</td>
+												<td>Peak District</td>
+											</tr>												
+																			
+											<tr>
+												<td class="races-table-date">Tue 17/05/16</td>
+												<td><a href="races.php?id=4250">Totley Moor</a></td>
+												<td>AS</td>
+												<td>England</td>
+												<td>Peak District</td>
+											</tr>												
+																			
+											<tr>
+												<td class="races-table-date">Wed 18/05/16</td>
+												<td><a href="races.php?id=4533">Blackstone Edge</a></td>
+												<td>AS</td>
+												<td>England</td>
+												<td>South/West Pennines</td>
+											</tr>												
+																			
+											<tr>
+												<td class="races-table-date">Wed 18/05/16</td>
+												<td><a href="races.php?id=4143">Caw</a></td>
+												<td>AS</td>
+												<td>England</td>
+												<td>Lake District</td>
+											</tr>												
+																			
+											<tr>
+												<td class="races-table-date">Wed 18/05/16</td>
+												<td><a href="races.php?id=4452">Kildwick</a></td>
+												<td>BS</td>
+												<td>England</td>
+												<td>South/West Pennines</td>
+											</tr>												
+																			
+											<tr>
+												<td class="races-table-date">Wed 18/05/16</td>
+												<td><a href="races.php?id=4269">Latrigg</a></td>
+												<td>AS</td>
+												<td>England</td>
+												<td>Lake District</td>
+											</tr>												
+																			
+											<tr>
+												<td class="races-table-date">Wed 18/05/16</td>
+												<td><a href="races.php?id=4251">Latterbarrow Loop</a></td>
+												<td>AS</td>
+												<td>England</td>
+												<td>Lake District</td>
+											</tr>												
+																			
+											<tr>
+												<td class="races-table-date">Wed 18/05/16</td>
+												<td><a href="races.php?id=4604">Shining Tor</a></td>
+												<td>AS</td>
+												<td>England</td>
+												<td>Peak District</td>
+											</tr>												
+																			
+											<tr>
+												<td class="races-table-date">Wed 18/05/16</td>
+												<td><a href="races.php?id=4544">Yr Hafod</a></td>
+												<td>BS</td>
+												<td>Wales</td>
+												<td>Mid</td>
+											</tr>												
+																			
+											<tr>
+												<td class="races-table-date">Fri 20/05/16</td>
+												<td><a href="races.php?id=4248">Hayfield May Queen</a></td>
+												<td>BS</td>
+												<td>England</td>
+												<td>Peak District</td>
+											</tr>												
+																			
+											<tr>
+												<td class="races-table-date">Sat 21/05/16</td>
+												<td><a href="races.php?id=4692">2016 World Youth Cup Trial</a></td>
+												<td>AS</td>
+												<td>England</td>
+												<td>York. Dales</td>
+											</tr>												
+																			
+											<tr>
+												<td class="races-table-date">Sat 21/05/16</td>
+												<td><a href="races.php?id=4705">Buttermere Sailbeck</a></td>
+												<td>AM</td>
+												<td>England</td>
+												<td>Lake District</td>
+											</tr>												
+																			
+											<tr>
+												<td class="races-table-date">Sat 21/05/16</td>
+												<td><a href="races.php?id=4344">Charlesworth Chase ( Simon's Seat)</a></td>
+												<td>BS</td>
+												<td>England</td>
+												<td>York. Dales</td>
+											</tr>												
+																			
+											<tr>
+												<td class="races-table-date">Sat 21/05/16</td>
+												<td><a href="races.php?id=4294">Excalibur</a></td>
+												<td>BL</td>
+												<td>Wales</td>
+												<td>North</td>
+											</tr>												
+																			
+											<tr>
+												<td class="races-table-date">Sat 21/05/16</td>
+												<td><a href="races.php?id=4486">Mount Famine</a></td>
+												<td>AS</td>
+												<td>England</td>
+												<td>Peak District</td>
+											</tr>												
+																			
+											<tr>
+												<td class="races-table-date">Sat 21/05/16</td>
+												<td><a href="races.php?id=4249">Old Counties Tops</a></td>
+												<td>AL</td>
+												<td>England</td>
+												<td>Lake District</td>
+											</tr>												
+																			
+											<tr>
+												<td class="races-table-date">Sat 21/05/16</td>
+												<td><a href="races.php?id=4166">Y Gader ( Cader Idris)</a></td>
+												<td>AM</td>
+												<td>Wales</td>
+												<td>North</td>
+											</tr>												
+																			
+											<tr>
+												<td class="races-table-date">Sun 22/05/16</td>
+												<td><a href="races.php?id=4318">Glaramara</a></td>
+												<td>AS</td>
+												<td>England</td>
+												<td>Lake District</td>
+											</tr>												
+																			
+											<tr>
+												<td class="races-table-date">Sun 22/05/16</td>
+												<td><a href="races.php?id=4559">Lantern Pike Dash</a></td>
+												<td>AS</td>
+												<td>England</td>
+												<td>Peak District</td>
+											</tr>												
+																			
+											<tr>
+												<td class="races-table-date">Sun 22/05/16</td>
+												<td><a href="races.php?id=4555">Peat Pits Wood 2</a></td>
+												<td>BS</td>
+												<td>England</td>
+												<td>Peak District</td>
+											</tr>												
+																			
+											<tr>
+												<td class="races-table-date">Sun 22/05/16</td>
+												<td><a href="races.php?id=4343">West Nab</a></td>
+												<td>AS</td>
+												<td>England</td>
+												<td>South/West Pennines</td>
+											</tr>												
+																			
+											<tr>
+												<td class="races-table-date">Tue 24/05/16</td>
+												<td><a href="races.php?id=4329">Great Orme</a></td>
+												<td>AS</td>
+												<td>Wales</td>
+												<td>North</td>
+											</tr>												
+																			
+											<tr>
+												<td class="races-table-date">Tue 24/05/16</td>
+												<td><a href="races.php?id=4535">Roseberry Romp</a></td>
+												<td>BS</td>
+												<td>England</td>
+												<td>North York Moors</td>
+											</tr>												
+																			
+											<tr>
+												<td class="races-table-date">Wed 25/05/16</td>
+												<td><a href="races.php?id=4283">Batch Bash</a></td>
+												<td>AS</td>
+												<td>England</td>
+												<td>Shropshire/Welsh Borders</td>
+											</tr>												
+																			
+											<tr>
+												<td class="races-table-date">Wed 25/05/16</td>
+												<td><a href="races.php?id=4226">Fo(e) Edge</a></td>
+												<td>BS</td>
+												<td>England</td>
+												<td>South/West Pennines</td>
+											</tr>												
+																			
+											<tr>
+												<td class="races-table-date">Wed 25/05/16</td>
+												<td><a href="races.php?id=4277">Harrock Hill 1</a></td>
+												<td>BS</td>
+												<td>England</td>
+												<td>South/West Pennines</td>
+											</tr>												
+																			
+											<tr>
+												<td class="races-table-date">Fri 27/05/16</td>
+												<td><a href="races.php?id=4243">Rab Evening Mini Mm May</a></td>
+												<td>O</td>
+												<td>England</td>
+												<td>Peak District</td>
+											</tr>												
+																			
+											<tr>
+												<td class="races-table-date">Sat 28/05/16</td>
+												<td><a href="races.php?id=4645">B A European Mountain Running Championship Trial</a></td>
+												<td>Unknown</td>
+												<td>England - Not FRA</td>
+												<td>Lake District</td>
+											</tr>												
+																			
+											<tr>
+												<td class="races-table-date">Sat 28/05/16</td>
+												<td><a href="races.php?id=4413">Hutton Roof Crags</a></td>
+												<td>BM</td>
+												<td>England</td>
+												<td>Lake District</td>
+											</tr>												
+																			
+											<tr>
+												<td class="races-table-date">Sat 28/05/16</td>
+												<td><a href="races.php?id=4358">Isle Of Jura</a></td>
+												<td>AL</td>
+												<td>Scotland</td>
+												<td>Islands</td>
+											</tr>												
+																			
+											<tr>
+												<td class="races-table-date">Sat 28/05/16</td>
+												<td><a href="races.php?id=4212">Slieve Donard</a></td>
+												<td>AS</td>
+												<td>Northern Ireland</td>
+												<td></td>
+											</tr>												
+																			
+											<tr>
+												<td class="races-table-date">Sun 29/05/16</td>
+												<td><a href="races.php?id=4697">Coniston Gullies ( B O F R A )</a></td>
+												<td>AS</td>
+												<td>England</td>
+												<td>Lake District</td>
+											</tr>												
+																			
+											<tr>
+												<td class="races-table-date">Sun 29/05/16</td>
+												<td><a href="races.php?id=4157">Helvellyn And The Dodds</a></td>
+												<td>AL</td>
+												<td>England</td>
+												<td>Lake District</td>
+											</tr>												
+																			
+											<tr>
+												<td class="races-table-date">Sun 29/05/16</td>
+												<td><a href="races.php?id=4679">Mynydd Myfyr</a></td>
+												<td>CS</td>
+												<td>England</td>
+												<td>Shropshire/Welsh Borders</td>
+											</tr>												
+																			
+											<tr>
+												<td class="races-table-date">Sun 29/05/16</td>
+												<td><a href="races.php?id=4439">Saddleworth</a></td>
+												<td>AS</td>
+												<td>England</td>
+												<td>South/West Pennines</td>
+											</tr>												
+																			
+									</tbody> 
+								
+								</table>
+							
+									<ul class="pagination">
+		<strong>Page:</strong>&nbsp;</li>
+		<li><a href="/races.php?y=2016&p=2&p=4&p=1" title="Go to page 1">1</a></li><li><a href="/races.php?y=2016&p=2&p=4&p=2" title="Go to page 2">2</a></li><li><a href="/races.php?y=2016&p=2&p=4&p=3" title="Go to page 3">3</a></li><li><a href="/races.php?y=2016&p=2&p=4&p=4" class="active" title="Go to page 4">4</a></li><li><a href="/races.php?y=2016&p=2&p=4&p=5" title="Go to page 5">5</a></li><li><a href="/races.php?y=2016&p=2&p=4&p=6" title="Go to page 6">6</a></li><li><a href="/races.php?y=2016&p=2&p=4&p=7" title="Go to page 7">7</a></li><li><a href="/races.php?y=2016&p=2&p=4&p=8" title="Go to page 8">8</a></li><li><a href="/races.php?y=2016&p=2&p=4&p=9" title="Go to page 9">9</a></li><li><a href="/races.php?y=2016&p=2&p=4&p=10" title="Go to page 10">10</a></li><li><a href="/races.php?y=2016&p=2&p=4&p=11" title="Go to page 11">11</a></li><li><a href="/races.php?y=2016&p=2&p=4&p=12" title="Go to page 12">12</a></li><li><a href="/races.php?y=2016&p=2&p=4&p=13" title="Go to page 13">13</a></li>	</ul>
+</div>
+</div>
+</div>
+
+			<div class="row-fluid">
+				<div class="span12">
+					<div id="footer">
+	<div id="ads">
+		<h2 class="title_committee">Sponsors</h2>
+			<ul>
+				<li><a href="#"><img src="images/adverts/petebland3.gif"></li>
+			</ul>
+	</div>
+	</div id="sitemap">
+	</div>
+</div>
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-136116-8', 'fellrunner.org.uk');
+  ga('send', 'pageview');
+
+</script>
+				</div><!--span12-->
+			</div><!--row-->
+
+
+</body>
+</html>
+
