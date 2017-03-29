@@ -1,7 +1,8 @@
 import unittest
 from os.path import join, dirname, abspath
 
-from getresults import get_race_info, BadRaceInfo, get_available_race_years
+from getresults import (get_race_info, BadRaceInfo, get_available_race_years,
+                        result_table_entries_from_page)
 
 TEST_PAGES = abspath(join(dirname(__file__), 'test_pages'))
 
@@ -83,6 +84,16 @@ class TestCornercases(unittest.TestCase):
         """
         page = open(join(TEST_PAGES, 'race_5214.html'))
         rinfo = get_race_info(page)
+
+
+class TestRaceResultTable(unittest.TestCase):
+    """
+    Tests the code that builds a local index of race results
+    """
+
+    def test_result_table_entries_from_page(self):
+        page = open(join(TEST_PAGES, '2016_results.html'))
+        entries = list(result_table_entries_from_page(page))
 
 
 if __name__ == '__main__':
