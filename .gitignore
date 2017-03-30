@@ -3,3 +3,4 @@ terminal.glue
 *.log
 munger.py
 *.swp
+clean_rinfo.py

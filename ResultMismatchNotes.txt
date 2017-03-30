@@ -1,0 +1,55 @@
+EXample 1
+3775	Fan Fawr	1-10-2016
+Not listed in 'Races' section of website
+
+Example 2
+345	Crow Hill	3-8-2010
+Listed as "Crow Hill Reverse" in Races section
+=> Add rule: drop trailing 'Reverse'
+
+Example 3
+296	Oxenhope	17-7-2010
+Not listed
+
+Example 4
+295	Gravy 6	18-7-2010
+Not listed
+
+Example 5
+1195	Long Mynd	5-2-2012
+Listed as Long Mynd Valleys
+=> Add rule: drop trailing 'Valleys'
+
+Example 6
+1550	Viking Chase	25-9-2011
+listed as Viking Chase 4 Peaks... leave it be
+
+Example 7
+1100	Sugar Loaf	29-10-2011
+Not listed
+
+Example 8
+2853	Chevin	3-6-2015
+listed as Otley Chevin
+Add a special 'chevin' check -> if chevin in the name, call it chevin
+
+Example 9
+3790	Windgather 	16-10-2016
+list as Andrew Heywood Memorial Windgather
+The intermediate 'memorial' rule should have caught this...
+
+Example 10
+3325	Hayfield May Queen	20-5-2015
+Not listed
+
+Example 11
+1603	Kinder Trial	28-1-2012
+O class - rightfully excluded
+
+Example 12
+1232	Ras yr Aran	24-3-2012
+
+Example 13
+605	Long Mynd Valley	6-3-2011
+Listed as Long Mynd Valleys
+=> Add rule: drop trailing 'valley'

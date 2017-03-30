@@ -213,6 +213,8 @@ def get_race_info(page):
     # Race name
     race_header = soup.find('h2', {'class': 'title_races'}).text
     name = race_header.split(u'\u2013')[-1].split('(')[0].strip()
+    name = name.lower()
+    name = name.replace("'", "")
 
     # Date eg: <strong>Date &amp; time:</strong>  Sat 1st Apr 2017 at 11:00
     date_str = indexed_litems['Date & time'].split('time:')[-1].strip()
@@ -254,6 +256,8 @@ def result_table_entries_from_page(page):
         date = map(int, date_str.split('/'))
 
         name = tds[1].text
+        name = name.lower()
+        name.replace("'", "")
 
         link = tds[2].find('a')
         if link:
@@ -505,27 +509,157 @@ def build_results_table():
 
 
 def build_result_to_race_index():
+    rinfo_names = {}
+    with open('rinfo_norm.dat') as f_norm_rinfo:
+        next(f_norm_rinfo)
+        for line in f_norm_rinfo:
+            words = line.strip().split('\t')
+            idx = words[0]
+            name = words[1]
+            rinfo_names[idx] = name
+
+    result_names = {}
+    with open('results_norm.dat') as f_norm_res:
+        next(f_norm_res)
+        for line in f_norm_res:
+            words = line.strip().split('\t')
+            idx = words[0]
+            name = words[1]
+            result_names[idx] = name
+
     result_table = ResultTable('resulttable.dat')
     race_table = RaceInfoTable('rinfo.dat')
 
+    seen_already = set()
+    double_ups = []
     races = {}
     for idx, name, datestr, dist_km, climb_m in race_table:
-        races[(name, datestr)] = idx
+        name = rinfo_names[idx]
+        if (name, datestr) in seen_already:
+            if (name, datestr) in races:
+                del races[(name, datestr)]
+            double_ups.append((idx, name, datestr))
+        else:
+            seen_already.add((name, datestr))
+            races[(name, datestr)] = idx
 
+    if double_ups:
+        with open('ambiguous_races.log', 'w') as dbl_log:
+            for words in double_ups:
+                dbl_log.write('\t'.join(words) + '\n')
+        # raise Exception('Name normalising is too liberal, see ambiguous_races.log for info')
+
+    miss_count = 0
+    hit_count = 0
     with open('orphan_results.log', 'w') as log:
         with open('result_to_race_index.dat', 'w') as idx_file:
             idx_file.write('result_id\trace_id\n')
 
             for result_id, name, datestr in result_table:
-                if (name, datestr) in races:
-                    race_id = races[(name, datestr)]
+                norm_name = result_names[result_id]
+                if result_id == '345':
+                    print norm_name, datestr
+                if (norm_name, datestr) in races:
+                    hit_count += 1
+                    race_id = races[(norm_name, datestr)]
                     idx_file.write('%s\t%s\n' % (result_id, race_id))
                 else:
+                    miss_count += 1
                     log.write('%s\t%s\t%s\n' % (result_id, name, datestr))
 
+    return 1.0 * hit_count / (hit_count + miss_count)
+
+
+def normalise_name(s):
+    # default pass-through: 0.58023
+    # convert to lower case: 0.5932
+    # drop 'race' as last word: 0.6028
+    # drop 'hill' as last word: 0.6037
+    # drop initial 'isle of': 0.6041
+    # drop final 'memorial': 0.60494
+    # drop leading ordinals: 0.60787
+    # drop trailing 'reverse': 0.6083
+    # drop trailing 'valleys': 0.6087
+    # remove hyphens '-' and drop trailing 'seniors': 0.6305
+    #     and trailing 'senior': 0.6339
+    #     and trailing 'men' and 'mens': 0.64013
+    # special case for 'chevin' races: 0.6426
+    # use only what follows intermediate 'memorial': 0.648093
+    # drop leading ras (welsh for race, I guess): 0.6489
+    # drop trailing 'valley': 0.64935
+    # drop trailing 'run': 0.6502
+    s = s.lower()
+    words = s.split()
+    if words[0] == 'ras':
+        words = words[1:]
+    if words[-1] == 'reverse':
+        words = words[:-1]
+    if words[-1] == 'race' or words[-1] == 'run':
+        words = words[:-1]
+    if words[-1] == 'hill':
+        words = words[:-1]
+    if (len(words) > 2) and (words[0] + words[1] == 'isleof'):
+        words = words[2:]
+    if words[-1] == 'valleys' or words[-1] == 'valley':
+        words = words[:-1]
+
+    words = [w for w in words if w != '-']
+    if words[-1] == 'seniors':
+        words = words[:-1]
+    if words[-1] == 'senior':
+        words = words[:-1]
+    if words[-1] == 'men' or words[-1] == 'mens':
+        words = words[:-1]
+
+    if words[-1] == 'memorial':
+        words = words[:-1]
+
+    try:
+        idx = words.index('memorial')
+        words = words[idx + 1:]
+    except:
+        pass
+
+    ordinal_pattern = '.[0-9](st|nd|rd|th)'
+    if not words:
+        print s
+    if re.match(ordinal_pattern, words[0]):
+        words = words[1:]
+
+    s = ' '.join(words)
+    if 'chevin' in s:
+        s = 'chevin'
+
+    return s
+
+
+def normalise():
+    with open('rinfo_norm.dat', 'w') as f_norm_rinfo:
+        f_norm_rinfo.write('index\tname\n')
+        with open('rinfo.dat') as f_rinfo:
+            next(f_rinfo)
+            for line in f_rinfo:
+                words = line.split('\t')
+                idx = words[0]
+                name = words[1]
+                norm_name = normalise_name(name)
+                f_norm_rinfo.write('%s\t%s\n' % (idx, norm_name))
+
+    with open('results_norm.dat', 'w') as f_norm_res:
+        f_norm_res.write('index\tname\n')
+        with open('resulttable.dat') as f_results:
+            next(f_results)
+            for line in f_results:
+                words = line.split('\t')
+                idx = words[0]
+                name = words[1]
+                norm_name = normalise_name(name)
+                f_norm_res.write('%s\t%s\n' % (idx, norm_name))
 
 if __name__ == '__main__':
-    build_result_to_race_index()
+    normalise()
+    score = build_result_to_race_index()
+    print score
     #build_results_table()
     #build_race_info_table()
     #fr = FellRunner()

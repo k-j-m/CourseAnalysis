@@ -2,7 +2,8 @@ import unittest
 from os.path import join, dirname, abspath
 
 from getresults import (get_race_info, BadRaceInfo, get_available_race_years,
-                        result_table_entries_from_page, race_ids_from_race_table_page)
+                        result_table_entries_from_page, race_ids_from_race_table_page,
+                        normalise_name)
 
 TEST_PAGES = abspath(join(dirname(__file__), 'test_pages'))
 
@@ -97,6 +98,17 @@ class TestCornerCases(unittest.TestCase):
         # then make sure we can get the race info
         page = open(join(TEST_PAGES, '2016_slieve_donard.html'))
         race_info = get_race_info(page)
+
+    def test_intermediate_normalise(self):
+        s = 'Andrew Heywood Memorial Windgather'
+        expected = 'windgather'
+        returned = normalise_name(s)
+        self.assertEquals(expected, returned)
+
+        s = 'david bell memorial - seniors'
+        expected = 'david bell'
+        returned = normalise_name(s)
+        self.assertEquals(expected, returned)
 
 
 class TestRaceResultTable(unittest.TestCase):
