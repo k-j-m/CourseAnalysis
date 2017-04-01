@@ -4,3 +4,5 @@ terminal.glue
 munger.py
 *.swp
 clean_rinfo.py
+learning_rate.dat
+*.out
