@@ -1,6 +1,7 @@
 import os
-import re
 from itertools import izip
+
+from kcourse.file_tools import process_results_file, read_result_to_race_index
 
 
 def count_unique_runners():
@@ -39,83 +40,6 @@ def verify_results_files():
             bad_files.append(f)
     print '\n'.join(bad_files)
     print len(bad_files)
-
-
-class RetiredRunner(ValueError):
-    pass
-
-
-RETIRED = set(['ret', 'retired', 'dnf', 'dq', 'unknown', 
-               'n/a', 'late', 'd.n.s', 'retd'])
-
-def munge_line(s):
-    words = [w.strip() for w in s.lower().split(',')]
-    if len(words) == 5:
-        words = [words[1] + ' ' + words[0]] + words[2:]
-    name, club, category, timestr = words
-    name.replace('twitter', '')
-    name = name.replace('facebook', '')
-    name = name.replace('strava', '')
-    if not ends_2_decimals(timestr) or timestr.isdigit():
-        raise RetiredRunner
-    if re.match('.*[a-z].*', timestr):
-        raise RetiredRunner
-    time = timestr_to_secs(timestr)
-    return name, club, category, time
-
-
-def ends_2_decimals(s):
-    pattern = '.*[0-9][0-9]$'
-    return re.match(pattern, s)
-
-
-def timestr_to_secs(s):
-    s = s.replace('-', ':')
-    s = s.replace('/', ':')
-    s = s.replace('.', ':')
-    s = s.replace(' ', ':')
-    s2 = None
-    while s != s2:
-        s2 = s
-        s = s.replace('::', ':')
-    words = s.split(':')  # split(delimiters=[':', '-', '/'], string=s)
-    words = [w if w else '0' for w in words]
-    ints = map(int, words)
-    if len(ints) == 3:
-        return 3600 * ints[0] + 60 * ints[1] + ints[2]
-    else:
-        assert len(ints) == 2
-        return 60 * ints[0] + ints[1]
-
-
-def split(delimiters, string, maxsplit=0):
-    import re
-    regexPattern = '|'.join(map(re.escape, delimiters))
-    return re.split(regexPattern, string, maxsplit)
-
-
-def process_results_file(f):
-    """
-    Munges a results csv file and returns usable data
-
-    Returns:
-        Dict[str, int]: mapping of runner name -> finish time (in seconds)
-    """
-    runners = {}
-    with open(f) as f_in:
-        next(f_in)  # throw away header
-        for line in f_in:
-            try:
-                name, club, category, time = munge_line(line)
-            except RetiredRunner:
-                pass
-            except:
-                print f, line,
-                #raise
-            else:
-                runners[name] = time
-
-    return runners
 
 
 def process_results_collection(race_data_dicts):
@@ -158,8 +82,6 @@ class Scorer(object):
         J, race_grads, runner_grads = self.cost_function(race_scores,
                                                          runner_scores)
         grads = race_grads + runner_grads
-        #print '@@@', race_grads
-        #print '---', grads[0]
         assert len(grads) == self.n_races + self.n_runners
         return J, grads
 
@@ -172,11 +94,6 @@ class Scorer(object):
             runner_scores (List[float]): list of runner handicap scores
         """
         J = 0
-
-        #race_scores, old_race_scores = race_scores[:], race_scores
-        #runner_scores, old_runner_scores = runner_scores[:], runner_scores
-
-        # normalise race and runner scores
 
         race_grads = [0] * len(race_scores)
         runner_grads = [0] * len(runner_scores)
@@ -232,13 +149,19 @@ def calc_theta0(races, runner_names):
 
 
 
-def create_scorer():
+def create_scorer(J_logger_fn=None):
     folder = 'results'
+    result_to_race, _ = read_result_to_race_index('result_to_race_index.dat')
+
     race_dicts = []
     race_ids = []
-    for f in os.listdir(folder):
-        race_ids.append(f.split('.')[0])
-        fpath = os.path.join(folder, f)
+    for result_id in result_to_race:
+    #for f in os.listdir(folder):
+        fpath = os.path.join(folder, result_id + '.csv')
+        if not os.path.exists(fpath):
+            continue
+
+        race_ids.append(result_id)
         race_data = process_results_file(fpath)
         race_dicts.append(race_data)
 
@@ -249,7 +172,8 @@ def create_scorer():
 
     unrolled_params = race_theta0 + runner_theta0
 
-    J, params = kminimize(scorer.unrolled_cost_function, unrolled_params)
+    J, params = kminimize(scorer.unrolled_cost_function,
+                          unrolled_params, J_logger_fn)
 
     n_races = len(races)
     n_runners = len(runners)
@@ -270,7 +194,10 @@ def create_scorer():
             f_out.write('%s\t%f\n' % (race_id, theta))
 
 
-def kminimize(fun, initial_params):
+def kminimize(fun, initial_params, J_logger_fn=None):
+    if J_logger_fn is None:
+        J_logger_fn = lambda x: None
+
     n = len(initial_params)
     print 'n:', n
     alpha = 3E-12
@@ -286,7 +213,7 @@ def kminimize(fun, initial_params):
         i_iter += 1
         J0 = J
         J, grads = fun(params)
-        print J
+        J_logger_fn(J)
         if i_iter > 1:
             rel_change = (J - J0) / J0
             if rel_change > 1.1:
@@ -304,6 +231,16 @@ def kminimize(fun, initial_params):
 if __name__ == '__main__':
     #verify_results_files()
     #print count_unique_runners()
-    create_scorer()
+
+    J_vals = []
+    def J_logger(J):
+        J_vals.append(J)
+
+    import time
+    start_time = time.time()
+    create_scorer(J_logger)
+    print '\n'.join(map(str, J_vals))
+    #print 'Elapsed time: %f' % (time.time() - start_time)
+
     #import timeit
     #print timeit.timeit('f()', setup='from __main__ import f', number=10)
