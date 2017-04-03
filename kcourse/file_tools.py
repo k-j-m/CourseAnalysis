@@ -20,6 +20,10 @@ class EmptyResultSet(ValueError):
     pass
 
 
+class BadName(ValueError):
+    pass
+
+
 def read_result_to_race_index(fpath):
     """
     Reads the race_to_result index file as a couple of dictionaries, giving
@@ -50,6 +54,8 @@ def read_results_file(f):
             try:
                 name, club, category, time = munge_line(line)
             except RetiredRunner:
+                continue
+            except BadName:
                 continue
             yield name, club, category, time
 
@@ -126,6 +132,10 @@ def munge_line(s):
     name.replace('twitter', '')
     name = name.replace('facebook', '')
     name = name.replace('strava', '')
+    name = name.strip()
+    if not name:
+        raise BadName
+
     if not ends_2_decimals(timestr) or timestr.isdigit():
         raise RetiredRunner
     if re.match('.*[a-z].*', timestr):

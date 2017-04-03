@@ -1,8 +1,10 @@
+import re
 import os
 from itertools import izip
 
 from kcourse.file_tools import (process_results_file, read_result_to_race_index,
-                                process_results_collection, EmptyResultSet)
+                                process_results_collection, EmptyResultSet,
+                                RaceInfoTable)
 
 
 def count_unique_runners():
@@ -159,11 +161,18 @@ def calc_theta0(races, runner_names):
 def create_scorer(niters, J_logger_fn=None):
     folder = 'results'
     result_to_race, _ = read_result_to_race_index('result_to_race_index.dat')
+    rinfo_table = RaceInfoTable('rinfo.dat')  # used to check race names
+    ignore_patterns = ['trunce']
 
     race_dicts = []
     race_ids = []
 
     for result_id in result_to_race:
+        race_id = result_to_race[result_id]  # TODO: use iteritems()
+        race_name = rinfo_table[race_id][0]
+        for ig_patt in ignore_patterns:
+            if re.match(ig_patt, race_name, re.IGNORECASE):
+                continue
         fpath = os.path.join(folder, result_id + '.csv')
         if not os.path.exists(fpath):
             continue
