@@ -273,30 +273,6 @@ class BadRaceInfo(ValueError):
     pass
 
 
-class RaceInfo(object):
-    """
-    Class to model the data that we want to capture about a specific
-    race instance.
-
-    We're capturing all of this info for each year that the race runs
-    to give some flexibility for dealing with year-to-year changes in
-    the vital statistics.
-    """
-    def __init__(self, name='', date=None, distance_km=0.0, climb_m=0.0):
-        self.name = name
-        self.date = date
-        self.distance_km = distance_km
-        self.climb_m = climb_m
-
-    def to_json(self):
-        return {
-            'name': self.name,
-            'date': self.date,
-            'distance_km': self.distance_km,
-            'climb_m': self.climb_m,
-        }
-
-
 class ResultsFolder(object):
     """
     Class wraps around a folder containing race CSV files
@@ -393,37 +369,6 @@ def scrape_race_results():
             res_folder.add_csv(r_idx, race_csv)
             print '.',
 
-
-class RaceInfoTable(object):
-
-    def __init__(self, f):
-        if not os.path.exists(f):
-            with open(f, 'w') as f_out:
-                f_out.write('index\tname\tdate\tdistance_km\tclimb_m\n')
-        self._f = f
-
-        self._indices = set()
-        with open(f) as f_in:
-            next(f_in) # throw away header
-            for line in f_in:
-                idx = line.split()[0]
-                self._indices.add(idx)
-
-    def __contains__(self, idx):
-        return idx in self._indices
-
-    def add(self, idx, race_info):
-        with open(self._f, 'a') as f_a:
-            date_str = '-'.join(map(str, race_info.date))
-            f_a.write('%s\t%s\t%s\t%s\t%s\n' % (idx, race_info.name.encode('utf8'), date_str,
-                                                race_info.distance_km, race_info.climb_m))
-
-    def __iter__(self):
-        with open(self._f, 'r') as f_in:
-            next(f_in)
-            for line in f_in:
-                idx, name, datestr, dist_km, climb_m = line.strip().split('\t')
-                yield idx, name, datestr, dist_km, climb_m
 
 
 class ResultTable(object):

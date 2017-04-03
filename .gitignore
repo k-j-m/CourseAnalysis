@@ -6,3 +6,6 @@ munger.py
 clean_rinfo.py
 learning_rate.dat
 *.out
+vital_statistics.txt
+.~*
+*.ods
