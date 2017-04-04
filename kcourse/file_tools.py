@@ -89,7 +89,6 @@ def process_results_collection(race_data_dicts):
         min2 = min(d.values())
         assert min1 == min2  # normed and un-normed must have the same winning time
 
-    print '***:', min(race_data_dicts[1076].values())
     return normed_race_dicts, runners
 
 
@@ -133,6 +132,8 @@ def munge_line(s):
     name = name.replace('facebook', '')
     name = name.replace('strava', '')
     name = name.strip()
+    name = name.replace('.', ' ')
+    name = ' '.join(name.split())
     if not name:
         raise BadName
 
@@ -210,7 +211,10 @@ class RaceInfoTable(object):
         with open(f) as f_in:
             next(f_in) # throw away header
             for line in f_in:
-                idx, name, datestr, dist_km, climb_m = line.strip().split('\t')
+                try:
+                    idx, name, datestr, dist_km, climb_m = line.strip().split('\t')
+                except ValueError:
+                    raise ValueError('Bad line: %s' % line)
                 self._data[idx] = idx, name, datestr, dist_km, climb_m
 
     def __contains__(self, idx):

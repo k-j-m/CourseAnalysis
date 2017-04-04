@@ -98,19 +98,32 @@ class Scorer(object):
         runner_grads_norm = [rg / count for rg in runner_grads]
         return J_norm, race_grads_norm, runner_grads_norm
 
-
     def race_errors(self, race_scores, runner_scores):
         for race_id, runners in enumerate(self.races):
             d = race_scores[race_id]
+            twin = self.winning_times[race_id]
             count = 0
             J = 0
             for runner_id, time in runners.iteritems():
                 h = runner_scores[runner_id]
-                prediction = d * h
+                prediction = d * h * twin
                 err = (time - prediction) / time
                 J += 0.5 * err**2
                 count += 1
             yield race_id, J / count
+
+    def runner_errors(self, race_scores, runner_scores):
+        runner_errs = [[] for _ in runner_scores]
+        for race_id, runners in enumerate(self.races):
+            d = race_scores[race_id]
+            twin = self.winning_times[race_id]
+            for runner_id, time in runners.iteritems():
+                h = runner_scores[runner_id]
+                prediction = d * h * twin
+                err = (time - prediction) / time
+                runner_errs[runner_id].append(err**2)
+        for i, errs in enumerate(runner_errs):
+            yield i, (sum(errs) / len(errs)), len(errs)
 
 
 def calc_avg_race_time(race_data):
@@ -157,8 +170,7 @@ def calc_theta0(races, runner_names):
     return race_theta0, runner_theta0
 
 
-
-def create_scorer(niters, J_logger_fn=None):
+def get_races_and_runners():
     folder = 'results'
     result_to_race, _ = read_result_to_race_index('result_to_race_index.dat')
     rinfo_table = RaceInfoTable('rinfo.dat')  # used to check race names
@@ -184,16 +196,27 @@ def create_scorer(niters, J_logger_fn=None):
 
         race_ids.append(result_id)
         race_dicts.append(race_data)
-
     races, runners = process_results_collection(race_dicts)
-    race_theta0, runner_theta0 = calc_theta0(races, runners)
-    winning_times = race_theta0
+    return races, runners, race_ids
+
+
+def create_scorer2(races, runners, winning_times):
+    scorer = Scorer(races, len(races), len(runners), winning_times)
+    return scorer
+
+
+def create_scorer(niters, J_logger_fn=None):
+    races, runners, race_ids = get_races_and_runners()
+    winning_times = [min_race_time(r) for r in races]
+    runner_theta0 = [1.] * len(runners)
     race_theta0 = [1.0 for _ in winning_times]
     unrolled_params = race_theta0 + runner_theta0
 
-    scorer = Scorer(races, len(races), len(runners), winning_times)
+    scorer = create_scorer2(races, runners, winning_times)
     J, params = kminimize(scorer.unrolled_cost_function,
                           unrolled_params, niters, J_logger_fn)
+
+
 
     n_races = len(races)
     n_runners = len(runners)
@@ -201,6 +224,9 @@ def create_scorer(niters, J_logger_fn=None):
     runner_theta = [params[i + n_races] for
                     i in xrange(n_runners)]
 
+    J3, _ = scorer.unrolled_cost_function(params)
+    J2, _, _ = scorer.cost_function(race_theta, runner_theta)
+    assert J3 == J2, 'Error: %f != %f' % (J, J2)
     sorted_runner_theta, sorted_runners = zip(*sorted(zip(runner_theta, runners)))
 
     with open('winning_times.out', 'w') as f_out:
@@ -213,12 +239,16 @@ def create_scorer(niters, J_logger_fn=None):
         for race_id, theta in izip(race_ids, race_theta0):
             f_out.write('%s\t%f\n' % (race_id, theta))
 
-    with open('runners.out', 'w') as f_out:
+    with open('runner_theta.out', 'w') as f_out:
+        for name, theta in izip(runners, runner_theta):
+            f_out.write('%s\t%f\n' % (name, theta))
+
+    with open('runner_ranking.out', 'w') as f_out:
         f_out.write('name\trunner score\n')
         for name, theta in izip(sorted_runners, sorted_runner_theta):
             f_out.write('%s\t%f\n' % (name, theta))
 
-    with open('race_scores.out', 'w') as f_out:
+    with open('race_theta.out', 'w') as f_out:
         f_out.write('result_id\tcourse_score\n')
         for race_id, theta in izip(race_ids, race_theta):
             f_out.write('%s\t%f\n' % (race_id, theta))
@@ -231,6 +261,17 @@ def create_scorer(niters, J_logger_fn=None):
                                 reverse=True):
             race_id = race_ids[r_id]
             lines.append('%s\t%f' % (race_id, err))
+        f_out.write('\n'.join(lines))
+
+    runner_errs = scorer.runner_errors(race_theta, runner_theta)
+    sorted_runner_errs = sorted(runner_errs,
+                                key=lambda x: x[1], reverse=True)
+    with open('runner_errors.out', 'w') as f_out:
+        f_out.write('name\tmean_err2\tnum_points\n')
+        lines = []
+        for r_id, err2, num in sorted_runner_errs:
+            name = runners[r_id].replace('\t', '')
+            lines.append('%s\t%f\t%i' % (name, err2, num))
         f_out.write('\n'.join(lines))
 
 
@@ -268,60 +309,6 @@ def kminimize(fun, initial_params, niters, J_logger_fn=None):
     return J, params
 
 
-def check_initial_vals():
-
-    folder = 'results'
-    result_to_race, _ = read_result_to_race_index('result_to_race_index.dat')
-
-    race_dicts = []
-    race_ids = []
-
-    bishop_id = None
-    bishop_data = None
-    for result_id in result_to_race:
-    #for f in os.listdir(folder):
-        fpath = os.path.join(folder, result_id + '.csv')
-        if not os.path.exists(fpath):
-            continue
-
-        try:
-            race_data = process_results_file(fpath)
-        except EmptyResultSet:
-            continue
-
-        race_ids.append(result_id)        
-        race_dicts.append(race_data)
-
-        if result_id == '676':
-            print len(race_ids) - 1
-            bishop_id = len(race_ids) - 1
-            bishop_data = race_data
-
-            print 'manually calcd:', min_race_time(race_data)
-            for k,v in race_data.iteritems():
-                print '%s\t%s' % (k,v)
-
-    assert race_dicts[bishop_id] is bishop_data
-    races, runners = process_results_collection(race_dicts)
-    race_theta0, runner_theta0 = calc_theta0(races, runners)
-    unrolled_params = race_theta0 + runner_theta0
-
-    print '-------------'
-    print 'list index: ', bishop_id
-    print 'Result ID:', race_ids[1076]
-    print 'Winner:', min(race_dicts[1076].values())
-    print 'Theta:', race_theta0[bishop_id]
-
-    # Bishop hill specific check
-    d = dict(izip(race_ids, race_theta0))
-    print d['676']
-
-    with open('initial_race_theta.out', 'w') as f_out:
-        f_out.write('result_id\trace_theta0\n')
-        for race_id, theta in izip(race_ids, race_theta0):
-            if race_id=='676':
-                print theta
-            f_out.write('%s\t%f\n' % (race_id, theta))
 
 
 if __name__ == '__main__':
@@ -335,7 +322,7 @@ if __name__ == '__main__':
     #check_initial_vals()
     #import time
     #start_time = time.time()
-    create_scorer(niters=100, J_logger_fn=J_logger)
+    create_scorer(niters=2000, J_logger_fn=J_logger)
     print '\n'.join(map(str, J_vals))
     #print 'Elapsed time: %f' % (time.time() - start_time)
 

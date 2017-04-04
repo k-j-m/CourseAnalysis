@@ -5,7 +5,7 @@ from kcourse.file_tools import RaceInfoTable, read_race_scores, read_result_to_r
 
 
 def print_race_table():
-    race_duration_scores = read_race_scores('race_scores.out')
+    race_duration_scores = read_race_scores('race_theta.out')
     results_folder = 'results'
     raceinfo_table = RaceInfoTable('rinfo.dat')
     _, course_to_results = read_result_to_race_index('result_to_race_index.dat')
