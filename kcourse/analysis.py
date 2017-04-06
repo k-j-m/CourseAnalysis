@@ -2,50 +2,48 @@ import re
 import os
 from itertools import izip
 
-from kcourse.file_tools import (process_results_file, read_result_to_race_index,
-                                process_results_collection, EmptyResultSet,
-                                RaceInfoTable)
+from kcourse.file_tools import (EmptyResultSet, DataFolder, ResultsFolder)
 
 
 def count_unique_runners():
     runners = set()
     folder = 'results'
-    for f in os.listdir(folder):
-        fpath = os.path.join(folder, f)
-        runners.update(runners_from_results(fpath))
+    res_folder = ResultsFolder(folder)
+    for res_csv in res_folder.values():
+        runners.update(res_csv.runner_names())
     return len(runners)
 
 
-def runners_from_results(fpath):
-    with open(fpath) as f_in:
-        next(f_in)
-        for line in f_in:
-            try:
-                words = [w.strip() for w in line.split(',')]
-                if len(words) == 5:
-                    words = [words[1] + ' ' + words[0]] + words[2:]
-                name, club, category, time = words
-                yield name
-            except:
-                #print fpath
-                print line
-                raise
+def process_results_collection(race_data_dicts):
+    """
+    TODO: ITS HERE ITS HERE! IT MUST BE HERE!
+    Args:
+        race_data_dicts (Iter[Dict[str, int]])
 
+    Returns:
+        List[Dict[runner_id, runner_time]]
+        List[runner_name]
+    """
+    runner_index = {}
+    runners = []  # list of runner names
+    normed_race_dicts = []
+    for race_dict in race_data_dicts:
+        d = {}
+        for runner_name, runner_time in race_dict.iteritems():
+            if runner_name not in runner_index:
+                runner_index[runner_name] = len(runners)
+                runners.append(runner_name)
+            runner_id = runner_index[runner_name]
+            d[runner_id] = runner_time
+        if d:
+            normed_race_dicts.append(d)
 
-def verify_results_files():
-    bad_files = []
-    folder = 'results'
-    for f in os.listdir(folder):
-        fpath = os.path.join(folder, f)
-        try:
-            list(runners_from_results(fpath))
-        except:
-            bad_files.append(f)
-    print '\n'.join(bad_files)
-    print len(bad_files)
+    for d, dd in izip(race_data_dicts, normed_race_dicts):
+        min1 = min(d.values())
+        min2 = min(d.values())
+        assert min1 == min2  # normed and un-normed must have the same winning time
 
-
-
+    return normed_race_dicts, runners
 
 
 class Scorer(object):
@@ -113,7 +111,7 @@ class Scorer(object):
             yield race_id, J / count
 
     def runner_errors(self, race_scores, runner_scores):
-        runner_errs = [[] for _ in runner_scores]
+        runner_errs = [{} for _ in runner_scores]
         for race_id, runners in enumerate(self.races):
             d = race_scores[race_id]
             twin = self.winning_times[race_id]
@@ -121,9 +119,8 @@ class Scorer(object):
                 h = runner_scores[runner_id]
                 prediction = d * h * twin
                 err = (time - prediction) / time
-                runner_errs[runner_id].append(err**2)
-        for i, errs in enumerate(runner_errs):
-            yield i, (sum(errs) / len(errs)), len(errs)
+                runner_errs[runner_id][race_id] = err
+        return runner_errs
 
 
 def calc_avg_race_time(race_data):
@@ -170,10 +167,11 @@ def calc_theta0(races, runner_names):
     return race_theta0, runner_theta0
 
 
-def get_races_and_runners():
-    folder = 'results'
-    result_to_race, _ = read_result_to_race_index('result_to_race_index.dat')
-    rinfo_table = RaceInfoTable('rinfo.dat')  # used to check race names
+def get_races_and_runners(data_folder, results_fpath):
+    folder = results_fpath
+    result_folder = ResultsFolder(folder)
+    result_to_race, _ = data_folder.result_to_race_index
+    rinfo_table = data_folder.raceinfo  # used to check race names
     ignore_patterns = ['trunce']
 
     race_dicts = []
@@ -185,12 +183,12 @@ def get_races_and_runners():
         for ig_patt in ignore_patterns:
             if re.match(ig_patt, race_name, re.IGNORECASE):
                 continue
-        fpath = os.path.join(folder, result_id + '.csv')
-        if not os.path.exists(fpath):
+
+        if result_id not in result_folder:
             continue
 
         try:
-            race_data = process_results_file(fpath)
+            race_data = result_folder[result_id].process()
         except EmptyResultSet:
             continue
 
@@ -205,8 +203,8 @@ def create_scorer2(races, runners, winning_times):
     return scorer
 
 
-def create_scorer(niters, J_logger_fn=None):
-    races, runners, race_ids = get_races_and_runners()
+def create_scorer(data_folder, niters, J_logger_fn=None):
+    races, runners, race_ids = get_races_and_runners(data_folder, 'results')
     winning_times = [min_race_time(r) for r in races]
     runner_theta0 = [1.] * len(runners)
     race_theta0 = [1.0 for _ in winning_times]
@@ -215,8 +213,6 @@ def create_scorer(niters, J_logger_fn=None):
     scorer = create_scorer2(races, runners, winning_times)
     J, params = kminimize(scorer.unrolled_cost_function,
                           unrolled_params, niters, J_logger_fn)
-
-
 
     n_races = len(races)
     n_runners = len(runners)
@@ -227,52 +223,18 @@ def create_scorer(niters, J_logger_fn=None):
     J3, _ = scorer.unrolled_cost_function(params)
     J2, _, _ = scorer.cost_function(race_theta, runner_theta)
     assert J3 == J2, 'Error: %f != %f' % (J, J2)
-    sorted_runner_theta, sorted_runners = zip(*sorted(zip(runner_theta, runners)))
 
-    with open('winning_times.out', 'w') as f_out:
-        f_out.write('result_id\twinning_time\n')
-        for race_id, twin in izip(race_ids, winning_times):
-            f_out.write('%s\t%f\n' % (race_id, twin))
+    # Write a bunch of stuff back out to the output folder
+    data_folder.write_winning_times(race_ids, winning_times)
+    data_folder.write_runner_theta(runners, runner_theta)
+    data_folder.write_sorted_runner_theta(runners, runner_theta)
+    data_folder.write_race_theta(race_ids, race_theta)
 
-    with open('initial_race_theta.out', 'w') as f_out:
-        f_out.write('result_id\trace_theta0\n')
-        for race_id, theta in izip(race_ids, race_theta0):
-            f_out.write('%s\t%f\n' % (race_id, theta))
-
-    with open('runner_theta.out', 'w') as f_out:
-        for name, theta in izip(runners, runner_theta):
-            f_out.write('%s\t%f\n' % (name, theta))
-
-    with open('runner_ranking.out', 'w') as f_out:
-        f_out.write('name\trunner score\n')
-        for name, theta in izip(sorted_runners, sorted_runner_theta):
-            f_out.write('%s\t%f\n' % (name, theta))
-
-    with open('race_theta.out', 'w') as f_out:
-        f_out.write('result_id\tcourse_score\n')
-        for race_id, theta in izip(race_ids, race_theta):
-            f_out.write('%s\t%f\n' % (race_id, theta))
-
-    with open('race_errors.out', 'w') as f_out:
-        f_out.write('result_id\tmean_err2\n')
-        lines = []
-        for r_id, err in sorted(scorer.race_errors(race_theta, runner_theta),
-                                key=lambda x: x[1],
-                                reverse=True):
-            race_id = race_ids[r_id]
-            lines.append('%s\t%f' % (race_id, err))
-        f_out.write('\n'.join(lines))
+    race_errs = scorer.race_errors(race_theta, runner_theta)
+    data_folder.write_race_errors(race_ids, race_errs)
 
     runner_errs = scorer.runner_errors(race_theta, runner_theta)
-    sorted_runner_errs = sorted(runner_errs,
-                                key=lambda x: x[1], reverse=True)
-    with open('runner_errors.out', 'w') as f_out:
-        f_out.write('name\tmean_err2\tnum_points\n')
-        lines = []
-        for r_id, err2, num in sorted_runner_errs:
-            name = runners[r_id].replace('\t', '')
-            lines.append('%s\t%f\t%i' % (name, err2, num))
-        f_out.write('\n'.join(lines))
+    data_folder.write_runner_errs(runners, runner_errs)
 
 
 def kminimize(fun, initial_params, niters, J_logger_fn=None):
@@ -322,7 +284,8 @@ if __name__ == '__main__':
     #check_initial_vals()
     #import time
     #start_time = time.time()
-    create_scorer(niters=2000, J_logger_fn=J_logger)
+    data_folder = DataFolder('data')
+    create_scorer(data_folder, niters=2000, J_logger_fn=J_logger)
     print '\n'.join(map(str, J_vals))
     #print 'Elapsed time: %f' % (time.time() - start_time)
 

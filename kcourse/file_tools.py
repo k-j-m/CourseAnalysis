@@ -2,6 +2,7 @@ import os
 import re
 from itertools import izip
 
+
 def read_race_scores(f):
     d = {}
     with open(f) as f_in:
@@ -60,38 +61,6 @@ def read_results_file(f):
             yield name, club, category, time
 
 
-def process_results_collection(race_data_dicts):
-    """
-    TODO: ITS HERE ITS HERE! IT MUST BE HERE!
-    Args:
-        race_data_dicts (Iter[Dict[str, int]])
-
-    Returns:
-        List[Dict[runner_id, runner_time]]
-        List[runner_name]
-    """
-    runner_index = {}
-    runners = []  # list of runner names
-    normed_race_dicts = []
-    for race_dict in race_data_dicts:
-        d = {}
-        for runner_name, runner_time in race_dict.iteritems():
-            if runner_name not in runner_index:
-                runner_index[runner_name] = len(runners)
-                runners.append(runner_name)
-            runner_id = runner_index[runner_name]
-            d[runner_id] = runner_time
-        if d:
-            normed_race_dicts.append(d)
-
-    for d, dd in izip(race_data_dicts, normed_race_dicts):
-        min1 = min(d.values())
-        min2 = min(d.values())
-        assert min1 == min2  # normed and un-normed must have the same winning time
-
-    return normed_race_dicts, runners
-
-
 def read_winning_times(f):
     d = {}
     with open(f) as f_in:
@@ -100,23 +69,6 @@ def read_winning_times(f):
             words = line.split()
             d[words[0]] = words[1]
     return d
-
-
-def process_results_file(f):
-    """
-    Munges a results csv file and returns usable data
-
-    Returns:
-        Dict[str, int]: mapping of runner name -> finish time (in seconds)
-    """
-    runners = {}
-    for name, club, category, time in read_results_file(f):
-        runners[name] = time
-
-    if not runners:
-        raise EmptyResultSet
-
-    return runners
 
 
 RETIRED = set(['ret', 'retired', 'dnf', 'dq', 'unknown',
@@ -238,3 +190,175 @@ class RaceInfoTable(object):
 
     def __getitem__(self, idx):
         return self._data[idx]
+
+
+class DataFolder(object):
+    """
+    Provides an easy interface for working with the course analysis data folder
+    """
+
+    def __init__(self, f):
+        self._f = f
+
+    @property
+    def raceinfo(self):
+        f = os.path.join(self._f, 'rinfo.dat')
+        return RaceInfoTable(f)
+
+    @property
+    def result_to_race_index(self):
+        f = os.path.join(self._f, 'result_to_race_index.dat')
+        return read_result_to_race_index(f)
+
+    def write_winning_times(self, race_ids, winning_times):
+        assert len(race_ids) == len(winning_times)
+        f = os.path.join(self._f, 'winning_times.out')
+        with open(f, 'w') as f_out:
+            f_out.write('result_id\twinning_time\n')
+            for race_id, twin in izip(race_ids, winning_times):
+                f_out.write('%s\t%f\n' % (race_id, twin))
+
+    def write_race_theta0(self, race_ids, race_theta0):
+        assert len(race_ids) == len(race_theta0)
+        f = os.path.join(self._f, 'initial_race_theta.out')
+        with open(f, 'w') as f_out:
+            f_out.write('result_id\trace_theta0\n')
+            for race_id, theta in izip(race_ids, race_theta0):
+                f_out.write('%s\t%f\n' % (race_id, theta))
+
+    def write_runner_theta(self, runner_names, runner_theta):
+        assert len(runner_names) == len(runner_theta)
+        f = os.path.join(self._f, 'runner_theta.out')
+        with open(f, 'w') as f_out:
+            f_out.write('result_id\trunner_score\n')
+            for name, theta in izip(runner_names, runner_theta):
+                f_out.write('%s\t%f\n' % (name, theta))
+
+    def write_sorted_runner_theta(self, runner_names, runner_theta):
+        assert len(runner_names) == len(runner_theta)
+        std_rnr_theta, std_rnrs = zip(*sorted(zip(runner_theta, runner_names)))
+        f = os.path.join(self._f, 'sorted_runner_theta.out')
+        with open(f, 'w') as f_out:
+            f_out.write('result_id\trunner_score\n')
+            for name, theta in izip(std_rnrs, std_rnr_theta):
+                f_out.write('%s\t%f\n' % (name, theta))
+
+    def write_race_theta(self, race_ids, race_theta):
+        assert len(race_ids) == len(race_theta)
+        f = os.path.join(self._f, 'initial_race_theta.out')
+        with open(f, 'w') as f_out:
+            f_out.write('result_id\trace_theta\n')
+            for race_id, theta in izip(race_ids, race_theta):
+                f_out.write('%s\t%f\n' % (race_id, theta))
+
+    def write_race_errors(self, race_ids, race_errors):
+        lines = ['result_id\tmean_err2']
+        for err, r_id in sorted(izip(race_ids, race_errors), reverse=True):
+            lines.append('%s\t%f' % (r_id, err))
+        f = os.path.join(self._f, 'race_errors.out')
+        with open(f, 'w'):
+            f.write('\n'.join(lines))
+
+    def runner_errs(self, runner_names, runner_errs):
+        """
+        Args:
+            runner_names (List[str])
+            runner_errs (List[Dict[int, float]])
+        """
+        avg_errs = [sum([e**2 for e in x.values()]) / len(x) for x in runner_errs]
+        num_races = [len(x) for x in runner_errs]
+        srtd = sorted(zip(avg_errs, runner_names, num_races), reverse=True)
+
+        lines = ['name\tmean_err2\tnum_points']
+        for name, err, nums in srtd:
+            lines.append('%s\t%f\t%i' % (name, err, num_races))
+
+        f = os.path.join(self._f, 'runner_errors.out')
+        with open(f, 'w') as f_out:
+            f_out.write('\n'.join(lines))
+
+
+class ResultsFolder(object):
+
+    def __init__(self, f):
+        self._f = f
+
+    def list_csvs(self):
+        for fname in os.listdir(self._f):
+            fpath = os.path.join(self._f, fname)
+            yield fpath
+
+    def __iter__(self):
+        for fname in os.listdir(self._f):
+            yield os.path.splitext(fname)[0]
+
+    def values(self):
+        for csv in self.list_csvs():
+            yield RaceCsv(csv)
+
+    def __contains__(self, race_id):
+        fname = os.path.join(self._f, race_id + '.csv')
+        return os.path.isfile(fname)
+
+    def __getitem__(self, race_id):
+        fname = os.path.join(self._f, race_id + '.csv')
+        return RaceCsv(fname)
+
+
+class RaceCsv(object):
+
+    def __init__(self, f):
+        self._f = f
+        self._blacklist = None
+        self._lines = None
+
+    @property
+    def race_id(self):
+        fname = os.path.split(self._f)[1]
+        return os.path.splitext(fname)[0]
+
+    def __read(self):
+        self._lines = open(self._f).readlines()
+
+    def header(self):
+        return self._lines[0]
+
+    def data_lines(self):
+        it = iter(self._lines)
+        next(it)
+        for line in it:
+            yield line
+
+    def runner_names(self):
+        for line in self.data_lines():
+            words = [w.strip() for w in line.split(',')]
+            if len(words) == 5:
+                words = [words[1] + ' ' + words[0]] + words[2:]
+            name, club, category, time = words
+            yield name
+
+    def data_rows(self):
+        for line in self.data_lines():
+            try:
+                name, club, category, time = munge_line(line)
+            except RetiredRunner:
+                continue
+            except BadName:
+                continue
+            yield name, club, category, time
+
+    def process(self):
+        """
+        Munges a results csv file and returns usable data
+
+        Returns:
+            Dict[str, int]: mapping of runner name -> finish time (in seconds)
+        """
+        runners = {}
+        for name, club, category, time in read_results_file(self._f):
+            runners[name] = time
+
+        if not runners:
+            raise EmptyResultSet
+
+        return runners
