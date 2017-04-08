@@ -1,5 +1,6 @@
 import unittest
-import analysis
+import kcourse.analysis as analysis
+import kcourse.file_tools as ft
 
 from os.path import join, dirname, abspath
 
@@ -12,12 +13,18 @@ class TestStringMunging(unittest.TestCase):
     def test_timestr_to_secs(self):
         s = '00:55:56'
         expected = 55 * 60 + 56
-        returned = analysis.timestr_to_secs(s)
+        returned = ft.timestr_to_secs(s)
         self.assertEquals(expected, returned)
 
         s = '55:56'
-        returned = analysis.timestr_to_secs(s)
+        returned = ft.timestr_to_secs(s)
         self.assertEquals(expected, returned)
+
+        s = u'52\xe2\x80\x9919\xe2\x80\x9d'
+        expected = 52 * 60 + 19
+        returned = ft.timestr_to_secs(s)
+        self.assertEquals(expected, returned)
+
 
     def test_munge_line(self):
         s = 'Daniel Miller,Endurance Store,M,00:34:04'

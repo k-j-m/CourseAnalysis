@@ -89,11 +89,10 @@ def munge_line(s):
     if not name:
         raise BadName
 
-    if not ends_2_decimals(timestr) or timestr.isdigit():
+    try:
+        time = timestr_to_secs(timestr)
+    except:
         raise RetiredRunner
-    if re.match('.*[a-z].*', timestr):
-        raise RetiredRunner
-    time = timestr_to_secs(timestr)
     return name, club, category, time
 
 
@@ -103,16 +102,15 @@ def ends_2_decimals(s):
 
 
 def timestr_to_secs(s):
-    s = s.replace('-', ':')
-    s = s.replace('/', ':')
-    s = s.replace('.', ':')
-    s = s.replace(' ', ':')
-    s2 = None
-    while s != s2:
-        s2 = s
-        s = s.replace('::', ':')
-    words = s.split(':')  # split(delimiters=[':', '-', '/'], string=s)
-    words = [w if w else '0' for w in words]
+    chars = []
+    for c in s:
+        try:
+            int(c)
+            chars.append(c)
+        except:
+            chars.append(' ')
+
+    words = ''.join(chars).split()
     ints = map(int, words)
     if len(ints) == 3:
         return 3600 * ints[0] + 60 * ints[1] + ints[2]
@@ -125,6 +123,73 @@ def split(delimiters, string, maxsplit=0):
     import re
     regexPattern = '|'.join(map(re.escape, delimiters))
     return re.split(regexPattern, string, maxsplit)
+
+
+class ResultItem(object):
+    def __init__(self, result_id, position, name, club, category, time):
+        self.result_id = result_id
+        self.position = position
+        self.name = name
+        self.club = club
+        self.category = category
+        self.time = time
+
+    @staticmethod
+    def from_csv_line(result_id, csv_line):
+        position, name, club, category, time = munge_line(csv_line)
+        return ResultItem(result_id, position, name, club, category, time)
+
+
+class RunnerInfo(object):
+    def __init__(self, name, score, race_results):
+        self.name = name
+        self.score = score
+        self.race_result = race_results
+
+
+class RunnerRacePerformance(object):
+    def __init__(self, result_id, race_id, race_name, date, time, score):
+        self.result_id = result_id
+        self.race_id = race_id
+        self.race_name = race_name
+        self.date = date
+        self.time = time
+        self.score = score
+
+
+class RaceResultSet(object):
+    def __init__(self, race_id, result_items):
+        if not result_items:
+            raise EmptyResultSet(race_id)
+
+        self.race_id = race_id
+        self.result_items = result_items
+        self._winning_time = None
+        self._avg_time = None
+
+    @property
+    def winning_time(self):
+        if self._winning_time is None:
+            self._winning_time = min(ritem.time for ritem in self.result_items)
+        return self._winning_time
+
+    @property
+    def avg_time(self):
+        if self._avg_time is None:
+            tot_time = sum(ritem.time for ritem in self.result_items)
+            self._avg_time = tot_time / self.num_finishers
+        return self._avg_time
+
+    @property
+    def num_finishers(self):
+        return len(self.result_items)
+
+    def iteritems(self):
+        for ritem in self.ritems:
+            yield ritem.name, ritem.time
+
+    def __iter__(self):
+        return iter(self.result_items)
 
 
 class RaceInfo(object):
@@ -189,7 +254,9 @@ class RaceInfoTable(object):
         return iter(self.data)
 
     def __getitem__(self, idx):
-        return self._data[idx]
+        race_id, name, datestr, dist_km, climb_m = self._data[idx]
+        rinfo = RaceInfo(name, datestr, dist_km, climb_m)
+        return rinfo
 
 
 class DataFolder(object):
@@ -209,6 +276,16 @@ class DataFolder(object):
     def result_to_race_index(self):
         f = os.path.join(self._f, 'result_to_race_index.dat')
         return read_result_to_race_index(f)
+
+    def read_race_theta(self):
+        f = os.path.join(self._f, 'race_theta.out')
+        rtheta = {}
+        with open(f) as f_in:
+            next(f_in)
+            for line in f_in:
+                rid, strtheta = line.strip().split('\t')
+                rtheta[rid] = float(strtheta)
+        return rtheta
 
     def write_winning_times(self, race_ids, winning_times):
         assert len(race_ids) == len(winning_times)
@@ -245,7 +322,7 @@ class DataFolder(object):
 
     def write_race_theta(self, race_ids, race_theta):
         assert len(race_ids) == len(race_theta)
-        f = os.path.join(self._f, 'initial_race_theta.out')
+        f = os.path.join(self._f, 'race_theta.out')
         with open(f, 'w') as f_out:
             f_out.write('result_id\trace_theta\n')
             for race_id, theta in izip(race_ids, race_theta):
@@ -253,13 +330,13 @@ class DataFolder(object):
 
     def write_race_errors(self, race_ids, race_errors):
         lines = ['result_id\tmean_err2']
-        for err, r_id in sorted(izip(race_ids, race_errors), reverse=True):
+        for r_id, err in sorted(izip(race_ids, race_errors), reverse=True):
             lines.append('%s\t%f' % (r_id, err))
         f = os.path.join(self._f, 'race_errors.out')
-        with open(f, 'w'):
-            f.write('\n'.join(lines))
+        with open(f, 'w') as f_out:
+            f_out.write('\n'.join(lines))
 
-    def runner_errs(self, runner_names, runner_errs):
+    def write_runner_errs(self, runner_names, runner_errs):
         """
         Args:
             runner_names (List[str])
@@ -270,8 +347,8 @@ class DataFolder(object):
         srtd = sorted(zip(avg_errs, runner_names, num_races), reverse=True)
 
         lines = ['name\tmean_err2\tnum_points']
-        for name, err, nums in srtd:
-            lines.append('%s\t%f\t%i' % (name, err, num_races))
+        for err, name, nums in srtd:
+            lines.append('%s\t%f\t%i' % (name, err, nums))
 
         f = os.path.join(self._f, 'runner_errors.out')
         with open(f, 'w') as f_out:
@@ -304,6 +381,19 @@ class ResultsFolder(object):
         fname = os.path.join(self._f, race_id + '.csv')
         return RaceCsv(fname)
 
+    def get_resultset(self, result_id):
+        fname = os.path.join(self._f, result_id + '.csv')
+        csv = RaceCsv(fname)
+
+        items = []
+        for i, (name, club, category, time) in enumerate(csv.data_rows()):
+            try:
+                new_item = ResultItem(result_id, i, name, club, category, time)
+                items.append(new_item)
+            except (RetiredRunner, BadName):
+                continue
+        return RaceResultSet(result_id, items)
+
 
 class RaceCsv(object):
 
@@ -324,6 +414,8 @@ class RaceCsv(object):
         return self._lines[0]
 
     def data_lines(self):
+        if self._lines is None:
+            self.__read()
         it = iter(self._lines)
         next(it)
         for line in it:

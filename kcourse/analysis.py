@@ -18,7 +18,7 @@ def process_results_collection(race_data_dicts):
     """
     TODO: ITS HERE ITS HERE! IT MUST BE HERE!
     Args:
-        race_data_dicts (Iter[Dict[str, int]])
+        race_data_dicts (Iter[RaceResultSet])
 
     Returns:
         List[Dict[runner_id, runner_time]]
@@ -108,7 +108,7 @@ class Scorer(object):
                 err = (time - prediction) / time
                 J += 0.5 * err**2
                 count += 1
-            yield race_id, J / count
+            yield J / count
 
     def runner_errors(self, race_scores, runner_scores):
         runner_errs = [{} for _ in runner_scores]
@@ -135,38 +135,6 @@ def min_race_time(race_data):
     return min(race_data.values())
 
 
-def calc_theta0(races, runner_names):
-    """
-    Args:
-        races (List[Dict[str: int]]) - list of race results (each a dict of runner name -> time)
-        runner_names (List of runner names)
-    """
-    from collections import defaultdict
-    runner_scores = defaultdict(set)
-    race_theta0 = []
-    for r in races:
-        fastest = None
-        for v in r.values():
-            if fastest is None or v < fastest:
-                fastest = v
-        race_theta0.append(fastest)
-        for k, v in r.iteritems():
-            v_norm = v / fastest
-            runner_scores[k].add(v_norm)
-
-    assert len(runner_scores) == len(runner_names)
-    runner_theta0 = []
-    for nm in runner_names:
-        runner_theta0.append(sum(runner_scores[nm]))
-
-    #  race_theta0 = [calc_avg_race_time(r) for r in races]
-    race_theta0 = [min_race_time(r) for r in races]
-    print 'inside calc_theta0:', race_theta0[1082]
-    print 'recalcd:', min_race_time(races[1082])
-    runner_theta0 = [1.] * len(runner_names)
-    return race_theta0, runner_theta0
-
-
 def get_races_and_runners(data_folder, results_fpath):
     folder = results_fpath
     result_folder = ResultsFolder(folder)
@@ -179,7 +147,7 @@ def get_races_and_runners(data_folder, results_fpath):
 
     for result_id in result_to_race:
         race_id = result_to_race[result_id]  # TODO: use iteritems()
-        race_name = rinfo_table[race_id][0]
+        race_name = rinfo_table[race_id].name
         for ig_patt in ignore_patterns:
             if re.match(ig_patt, race_name, re.IGNORECASE):
                 continue
@@ -285,7 +253,7 @@ if __name__ == '__main__':
     #import time
     #start_time = time.time()
     data_folder = DataFolder('data')
-    create_scorer(data_folder, niters=2000, J_logger_fn=J_logger)
+    create_scorer(data_folder, niters=50, J_logger_fn=J_logger)
     print '\n'.join(map(str, J_vals))
     #print 'Elapsed time: %f' % (time.time() - start_time)
 

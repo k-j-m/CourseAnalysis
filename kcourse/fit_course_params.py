@@ -105,6 +105,8 @@ def learn_params(f):
     with open('gnarliness.out', 'w') as f_out:
         f_out.write('\n'.join(lines))
 
+    with open('')
+
 
 if __name__ == '__main__':
     learn_params('resulttable.dat')
