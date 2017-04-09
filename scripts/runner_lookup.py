@@ -3,12 +3,10 @@ Builds a big index of runner race performances then prompts
 the user for a runner name to print the history for.
 """
 from collections import defaultdict
-from kcourse.file_tools import DataFolder, ResultsFolder, RunnerRacePerformance, EmptyResultSet
+from kcourse.domain import RunnerRacePerformance, EmptyResultSet
 
 
-def build_runner_index():
-    data_folder = DataFolder('data')
-    result_folder = ResultsFolder('results')
+def build_runner_index(data_folder, result_folder):
 
     runners = defaultdict(list)
 
@@ -42,8 +40,10 @@ def build_runner_index():
 
 
 if __name__ == '__main__':
-
-    runner_index = build_runner_index()
+    from kcourse.file_tools import DataFolder, ResultsFolder
+    data_folder = DataFolder('data')
+    result_folder = ResultsFolder('results')
+    runner_index = build_runner_index(data_folder, result_folder)
 
     while True:
         runner_name = raw_input('Enter runner name:')

@@ -41,3 +41,6 @@ class TestParamOrdering(unittest.TestCase):
         self.assertEquals(r_theta0_dict['111'], 1.0)
         self.assertEquals(r_theta0_dict['222'], 2.0)
         self.assertEquals(r_theta0_dict['333'], 3.0)
+
+        f = 'asdf.txt'
+        
