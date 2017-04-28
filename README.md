@@ -47,3 +47,11 @@ the flat (eg 1000ft is the equivalent of adding an extra 1.5 miles to the course
 
 The whole *gnarliness* thing was a bit of fun to explain away the difference between the predicted race duration
 (based on distance and ascent) and the actual race duration (based on the t_course parameter that we fit in the first model).
+
+
+## Problems with the modelling
+
+There are a number of things that aren't done so well
+* If different people have the same name, the results will get confused
+* Runners are assigned a single score for their entire race career - there is no accounting for peaks and troughs in race form
+* Any individual race 'gnarliness' is heavily influenced by the accuracy of course measurements. On average the model will predict reasonably well, but for specific races an under-reported race distance will swamp any other factors.
